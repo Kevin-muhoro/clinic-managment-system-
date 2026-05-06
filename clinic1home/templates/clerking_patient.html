@@ -1,0 +1,869 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center mb-4">
+        <div class="page-header-icon me-3">
+            <i class="bi bi-journal-plus"></i>
+        </div>
+        <div>
+            <h2 class="fw-bold mb-1">
+                <span class="gradient-text">Patient Clerking</span>
+            </h2>
+            <p class="text-muted mb-0">Document patient consultation and clinical notes</p>
+        </div>
+    </div>
+
+    <!-- SEARCH CARD - Modern Design -->
+    <div class="card modern-card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center mb-3 mb-md-0">
+                        <div class="icon-wrapper-sm bg-primary-soft me-3">
+                            <i class="bi bi-person-badge text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Find Patient Record</h5>
+                            <p class="text-muted small mb-0">Search by OP number or patient name to begin clerking</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <form method="get" class="search-form">
+                        <div class="input-group modern-input-group">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="bi bi-search text-primary"></i>
+                            </span>
+                            <input type="text" name="q" class="form-control modern-input"
+                                   placeholder="OP Number or Patient Name..."
+                                   value="{{ query }}" autofocus>
+                            <button type="submit" class="btn btn-modern-primary">
+                                Find
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if patient %}
+    <!-- PATIENT LOADED SUCCESSFULLY -->
+    <div class="row g-4">
+        <!-- Main Clerking Form -->
+        <div class="col-lg-8">
+            <div class="card modern-card border-0">
+                <!-- Patient Header -->
+                <div class="card-header modern-card-header clerking-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="patient-avatar clerking-avatar me-3">
+                                {{ patient.full_name|make_list|first }}
+                            </div>
+                            <div>
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="patient-op-badge bg-white text-primary me-2">
+                                        {{ patient.op_number }}
+                                    </span>
+                                    <span class="patient-type-badge">
+                                        <i class="bi bi-tag me-1"></i>{{ patient.get_patient_type_display }}
+                                    </span>
+                                </div>
+                                <h4 class="fw-bold mb-0 text-white">{{ patient.full_name }}</h4>
+                            </div>
+                        </div>
+                        <div class="text-end text-white-50">
+                            <small><i class="bi bi-calendar3 me-1"></i>{{ today|date:"l, d M Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="post" class="modern-form">
+                        {% csrf_token %}
+
+                        <!-- Quick Info Row -->
+                        <div class="quick-info-grid mb-4">
+                            <div class="info-chip">
+                                <i class="bi bi-gender-ambiguous"></i>
+                                <span>{{ patient.get_gender_display }}</span>
+                            </div>
+                            <div class="info-chip">
+                                <i class="bi bi-calendar"></i>
+                                <span>{{ age }} Years</span>
+                            </div>
+                            <div class="info-chip">
+                                <i class="bi bi-telephone"></i>
+                                <span>{{ patient.phone }}</span>
+                            </div>
+                            <div class="info-chip">
+                                <i class="bi bi-geo-alt"></i>
+                                <span>{{ patient.address|truncatechars:20 }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Clinical Details Grid -->
+                        <div class="row g-4">
+                            <!-- Left Column -->
+                            <div class="col-md-6">
+                                <div class="clinical-section">
+                                    <h6 class="section-title">
+                                        <i class="bi bi-hospital me-2"></i>Clinic Details
+                                    </h6>
+                                    <div class="section-content">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-uppercase text-muted">Clinic</label>
+                                            <select class="form-select modern-select" name="clinic">
+                                                <option value="General OPD">🏥 General OPD</option>
+                                                <option value="Medical Clinic">💊 Medical Clinic</option>
+                                                <option value="Surgical Clinic">🔪 Surgical Clinic</option>
+                                                <option value="Pediatric Clinic">👶 Pediatric Clinic</option>
+                                                <option value="Antenatal Clinic">🤰 Antenatal Clinic</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-uppercase text-muted">Doctor</label>
+                                            <div class="doctor-badge">
+                                                <i class="bi bi-person-badge-fill me-2"></i>
+                                                {% if doctor.get_full_name %}
+                                                     Dr. {{ doctor.get_full_name }}
+                                                {% else %}
+                                                     {{ doctor.username }}
+                                                {% endif %}
+                                                <small class="text-muted ms-2">(Attending)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="clinical-section mt-4">
+                                    <h6 class="section-title">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>Chief Complaint
+                                    </h6>
+                                    <div class="section-content">
+                                        <textarea name="chief_complaint" class="form-control modern-textarea"
+                                                  rows="3" placeholder="Describe the main reason for visit..." required></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="clinical-section mt-4">
+                                    <h6 class="section-title">
+                                        <i class="bi bi-clock-history me-2"></i>History of Present Illness
+                                    </h6>
+                                    <div class="section-content">
+                                        <textarea name="history" class="form-control modern-textarea"
+                                                  rows="5" placeholder="Detailed history of the condition..."></textarea>
+                                        <div class="form-hint mt-2">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Include onset, duration, severity, and associated symptoms
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="col-md-6">
+                                <div class="clinical-section">
+                                    <h6 class="section-title">
+                                        <i class="bi bi-clipboard2-pulse me-2"></i>Examination Findings
+                                    </h6>
+                                    <div class="section-content">
+                                        <textarea name="examination" class="form-control modern-textarea"
+                                                  rows="8" placeholder="Physical examination findings..."></textarea>
+                                        <div class="form-hint mt-2">
+                                            <i class="bi bi-lightbulb me-1"></i>
+                                            General, systemic, and local examination
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="clinical-section mt-4">
+                                    <h6 class="section-title">
+                                        <i class="bi bi-file-medical me-2"></i>Diagnosis & Plan
+                                    </h6>
+                                    <div class="section-content">
+                                        <textarea name="diagnosis" class="form-control modern-textarea"
+                                                  rows="5" placeholder="Working diagnosis and management plan..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="clinical-section mt-4">
+                                    <h6 class="section-title">
+                                        <i class="bi bi-arrow-repeat me-2"></i>Review & Follow-up
+                                    </h6>
+                                    <div class="section-content">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <label class="form-label small text-muted">Review Date</label>
+                                                <input type="date" class="form-control modern-input" value="{{ today|date:'Y-m-d' }}">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label small text-muted">Review With</label>
+                                                <select class="form-select modern-select">
+                                                    <option>Same Doctor</option>
+                                                    <option>Different Doctor</option>
+                                                    <option>Specialist</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-modern-success btn-lg px-5">
+                                <i class="bi bi-check2-circle me-2"></i>
+                                SAVE CLERKING NOTES
+                                <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                            <p class="text-muted small mt-2">
+                                <i class="bi bi-shield-lock me-1"></i>
+                                All clinical notes are encrypted and securely stored
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vital Signs Sidebar & Quick Actions -->
+        <div class="col-lg-4">
+            <!-- Vital Signs Card -->
+            <div class="card modern-card border-0 mb-4">
+                <div class="card-header vital-header">
+                    <div class="d-flex align-items-center">
+                        <div class="vital-icon me-2">
+                            <i class="bi bi-heart-pulse-fill"></i>
+                        </div>
+                        <h5 class="fw-bold mb-0 text-white">VITAL SIGNS</h5>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="vital-signs-grid">
+                        <div class="vital-input-group">
+                            <label class="vital-label">
+                                <i class="bi bi-arrow-up"></i>
+                                Blood Pressure
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control vital-input" placeholder="120/80">
+                                <span class="input-group-text vital-unit">mmHg</span>
+                            </div>
+                        </div>
+
+                        <div class="vital-input-group">
+                            <label class="vital-label">
+                                <i class="bi bi-thermometer-half"></i>
+                                Temperature
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control vital-input" placeholder="36.5">
+                                <span class="input-group-text vital-unit">°C</span>
+                            </div>
+                        </div>
+
+                        <div class="vital-input-group">
+                            <label class="vital-label">
+                                <i class="bi bi-activity"></i>
+                                Pulse
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control vital-input" placeholder="72">
+                                <span class="input-group-text vital-unit">bpm</span>
+                            </div>
+                        </div>
+
+                        <div class="vital-input-group">
+                            <label class="vital-label">
+                                <i class="bi bi-speedometer2"></i>
+                                Weight
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control vital-input" placeholder="70">
+                                <span class="input-group-text vital-unit">kg</span>
+                            </div>
+                        </div>
+
+                        <div class="vital-input-group">
+                            <label class="vital-label">
+                                <i class="bi bi-rulers"></i>
+                                Height
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control vital-input" placeholder="170">
+                                <span class="input-group-text vital-unit">cm</span>
+                            </div>
+                        </div>
+
+                        <div class="vital-input-group">
+                            <label class="vital-label">
+                                <i class="bi bi-droplet"></i>
+                                BMI
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control vital-input" placeholder="24.2" readonly>
+                                <span class="input-group-text vital-unit">kg/m²</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline-primary w-100 mt-3" onclick="calculateBMI()">
+                        <i class="bi bi-calculator me-2"></i>
+                        Calculate BMI
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card modern-card border-0">
+                <div class="card-header bg-white">
+                    <h6 class="fw-bold mb-0">
+                        <i class="bi bi-lightning-charge me-2 text-primary"></i>
+                        Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body p-3">
+                    <div class="quick-actions-grid">
+                        <a href="#" class="quick-action-item">
+                            <i class="bi bi-prescription"></i>
+                            <span>Write Prescription</span>
+                        </a>
+                        <a href="#" class="quick-action-item">
+                            <i class="bi bi-file-text"></i>
+                            <span>View History</span>
+                        </a>
+                        <a href="#" class="quick-action-item">
+                            <i class="bi bi-calendar-plus"></i>
+                            <span>Schedule Review</span>
+                        </a>
+                        <a href="#" class="quick-action-item">
+                            <i class="bi bi-envelope"></i>
+                            <span>Send SMS</span>
+                        </a>
+                        <a href="#" class="quick-action-item">
+                            <i class="bi bi-printer"></i>
+                            <span>Print Notes</span>
+                        </a>
+                        <a href="#" class="quick-action-item">
+                            <i class="bi bi-share"></i>
+                            <span>Refer Patient</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Visits Summary -->
+            <div class="card modern-card border-0 mt-4">
+                <div class="card-header bg-white">
+                    <h6 class="fw-bold mb-0">
+                        <i class="bi bi-clock-history me-2 text-primary"></i>
+                        Recent Visits
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-4 py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">15 Jan 2026</small>
+                                    <p class="mb-0 fw-bold">General OPD</p>
+                                </div>
+                                <span class="badge bg-success-soft text-success">Completed</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item px-4 py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">02 Jan 2026</small>
+                                    <p class="mb-0 fw-bold">Medical Clinic</p>
+                                </div>
+                                <span class="badge bg-success-soft text-success">Completed</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item px-4 py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">20 Dec 2025</small>
+                                    <p class="mb-0 fw-bold">Surgical Clinic</p>
+                                </div>
+                                <span class="badge bg-warning-soft text-warning">Follow-up</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty State - No Patient Selected -->
+    <div class="empty-state-card">
+        <div class="empty-state-icon">
+            <i class="bi bi-journal-medical"></i>
+        </div>
+        <h4 class="fw-bold mt-4 mb-2">No Patient Selected</h4>
+        <p class="text-muted mb-4">Search for a patient above to start clerking</p>
+
+        <div class="search-tips">
+            <h6 class="fw-bold mb-3"><i class="bi bi-lightbulb me-2"></i>Quick Tips</h6>
+            <div class="tip-item">
+                <i class="bi bi-1-circle-fill text-primary"></i>
+                <span>Enter OP number for exact match</span>
+            </div>
+            <div class="tip-item">
+                <i class="bi bi-2-circle-fill text-primary"></i>
+                <span>Type patient name for suggestions</span>
+            </div>
+            <div class="tip-item">
+                <i class="bi bi-3-circle-fill text-primary"></i>
+                <span>Recent patients appear in search</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<style>
+    /* Page Header Icon */
+    .page-header-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--primary);
+        box-shadow: 0 5px 15px rgba(46,91,255,0.1);
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Modern Card */
+    .modern-card {
+        border-radius: 24px;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255,255,255,0.5);
+        background: white;
+        overflow: hidden;
+    }
+
+    .modern-card:hover {
+        box-shadow: 0 20px 40px -15px rgba(46,91,255,0.2);
+    }
+
+    /* Icon Wrapper */
+    .icon-wrapper-sm {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bg-primary-soft {
+        background: rgba(46, 91, 255, 0.1);
+    }
+
+    /* Modern Input Group */
+    .modern-input-group {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 2px solid #edf2f7;
+        transition: all 0.3s ease;
+    }
+
+    .modern-input-group:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(46,91,255,0.1);
+    }
+
+    .modern-input {
+        border: none;
+        padding: 0.8rem 1rem;
+        font-size: 1rem;
+        background: white;
+    }
+
+    .modern-input:focus {
+        box-shadow: none;
+    }
+
+    /* Modern Button */
+    .btn-modern-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        font-weight: 600;
+        border-radius: 0 14px 14px 0;
+        transition: all 0.3s ease;
+    }
+
+    .btn-modern-primary:hover {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        transform: translateY(-1px);
+    }
+
+    /* Clerking Header */
+    .clerking-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        padding: 1.5rem;
+        border: none;
+    }
+
+    .clerking-avatar {
+        width: 60px;
+        height: 60px;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(5px);
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    /* Patient OP Badge */
+    .patient-op-badge {
+        padding: 0.3rem 1rem;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        backdrop-filter: blur(5px);
+    }
+
+    .patient-type-badge {
+        padding: 0.3rem 1rem;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        backdrop-filter: blur(5px);
+    }
+
+    /* Quick Info Grid */
+    .quick-info-grid {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        background: #f8fafd;
+        padding: 1rem;
+        border-radius: 16px;
+    }
+
+    .info-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 1rem;
+        background: white;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+
+    .info-chip i {
+        color: var(--primary);
+    }
+
+    /* Clinical Sections */
+    .clinical-section {
+        background: #f8fafd;
+        border-radius: 20px;
+        padding: 1.2rem;
+    }
+
+    .section-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .section-title i {
+        color: var(--primary);
+    }
+
+    /* Modern Select */
+    .modern-select {
+        border: 2px solid #edf2f7;
+        border-radius: 14px;
+        padding: 0.7rem 1rem;
+        font-size: 0.95rem;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .modern-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(46,91,255,0.1);
+    }
+
+    /* Doctor Badge */
+    .doctor-badge {
+        background: white;
+        border-radius: 14px;
+        padding: 0.8rem 1rem;
+        display: flex;
+        align-items: center;
+        border: 2px solid #edf2f7;
+        font-weight: 600;
+    }
+
+    .doctor-badge i {
+        color: var(--primary);
+    }
+
+    /* Modern Textarea */
+    .modern-textarea {
+        border: 2px solid #edf2f7;
+        border-radius: 16px;
+        padding: 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .modern-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(46,91,255,0.1);
+    }
+
+    /* Form Hint */
+    .form-hint {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        background: rgba(46,91,255,0.05);
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+    }
+
+    /* Success Button */
+    .btn-modern-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        font-weight: 700;
+        padding: 1rem 3rem;
+        box-shadow: 0 10px 20px -10px #10b981;
+        transition: all 0.3s ease;
+    }
+
+    .btn-modern-success:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 20px 30px -10px #10b981;
+        color: white;
+    }
+
+    /* Vital Signs Header */
+    .vital-header {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        padding: 1.2rem;
+        border: none;
+    }
+
+    .vital-icon {
+        width: 36px;
+        height: 36px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        backdrop-filter: blur(5px);
+    }
+
+    /* Vital Signs Grid */
+    .vital-signs-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .vital-input-group {
+        width: 100%;
+    }
+
+    .vital-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 0.3rem;
+        display: block;
+    }
+
+    .vital-label i {
+        color: var(--primary);
+        margin-right: 0.3rem;
+    }
+
+    .vital-input {
+        border: 2px solid #edf2f7;
+        border-radius: 12px 0 0 12px;
+        padding: 0.6rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    .vital-input:focus {
+        border-color: var(--primary);
+        box-shadow: none;
+    }
+
+    .vital-unit {
+        background: #f8fafd;
+        border: 2px solid #edf2f7;
+        border-left: none;
+        border-radius: 0 12px 12px 0;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Quick Actions Grid */
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .quick-action-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        background: #f8fafd;
+        border-radius: 16px;
+        text-decoration: none;
+        color: var(--text-dark);
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+
+    .quick-action-item:hover {
+        background: white;
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -10px var(--primary);
+        color: var(--primary);
+    }
+
+    .quick-action-item i {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--primary);
+    }
+
+    .quick-action-item span {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Empty State */
+    .empty-state-card {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 30px;
+        box-shadow: 0 20px 40px -15px rgba(0,0,0,0.1);
+        max-width: 600px;
+        margin: 2rem auto;
+    }
+
+    .empty-state-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        border-radius: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        color: var(--primary);
+        margin: 0 auto;
+        box-shadow: 0 20px 30px -10px rgba(46,91,255,0.2);
+    }
+
+    /* Search Tips */
+    .search-tips {
+        background: #f8fafd;
+        border-radius: 20px;
+        padding: 1.5rem;
+        text-align: left;
+        margin-top: 2rem;
+    }
+
+    .tip-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 12px;
+    }
+
+    .tip-item i {
+        font-size: 1.2rem;
+    }
+
+    /* Badges */
+    .badge.bg-success-soft {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .badge.bg-warning-soft {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+    }
+
+    /* Responsive */
+    @media(max-width: 768px) {
+        .quick-info-grid {
+            justify-content: center;
+        }
+
+        .quick-actions-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .btn-modern-success {
+            width: 100%;
+            padding: 1rem;
+        }
+    }
+</style>
+
+<script>
+function calculateBMI() {
+    // Simple BMI calculation function
+    const weight = document.querySelector('input[placeholder="70"]').value;
+    const height = document.querySelector('input[placeholder="170"]').value;
+
+    if (weight && height) {
+        const heightInM = height / 100;
+        const bmi = (weight / (heightInM * heightInM)).toFixed(1);
+        document.querySelector('input[placeholder="24.2"]').value = bmi;
+    }
+}
+</script>
+
+{% endblock %}

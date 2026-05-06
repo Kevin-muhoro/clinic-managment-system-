@@ -1,0 +1,506 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard - Clinic PRO{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ─── STAT CARDS ─────────────────────────────────── */
+    .stat-card {
+        border: none;
+        border-radius: 18px;
+        padding: 1.5rem 1.6rem;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.22s ease, box-shadow 0.22s ease;
+        cursor: default;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 40px -10px rgba(0,0,0,0.18) !important;
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        top: -30px;
+        right: -25px;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.12);
+        pointer-events: none;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.1);
+        pointer-events: none;
+    }
+
+    .stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        backdrop-filter: blur(4px);
+    }
+
+    .stat-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        opacity: 0.82;
+        margin-bottom: 0.3rem;
+    }
+
+    .stat-value {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+    }
+
+    .stat-sub {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin-top: 0.5rem;
+    }
+
+    .stat-primary  { background: linear-gradient(135deg, #1a3eb3 0%, #2e5bff 100%); color:#fff; box-shadow: 0 10px 28px -6px rgba(46,91,255,0.38); }
+    .stat-danger   { background: linear-gradient(135deg, #c0162a 0%, #ef4444 100%); color:#fff; box-shadow: 0 10px 28px -6px rgba(239,68,68,0.35); }
+    .stat-warning  { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); color:#fff; box-shadow: 0 10px 28px -6px rgba(245,158,11,0.35); }
+    .stat-success  { background: linear-gradient(135deg, #065f46 0%, #10b981 100%); color:#fff; box-shadow: 0 10px 28px -6px rgba(16,185,129,0.35); }
+
+    /* ─── SECTION CARDS ──────────────────────────────── */
+    .panel {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        overflow: hidden;
+    }
+
+    .panel-header {
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .panel-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #0f1829;
+        margin: 0;
+    }
+
+    .panel-body {
+        padding: 1.4rem 1.5rem;
+    }
+
+    /* ─── TASKS LIST ─────────────────────────────────── */
+    .task-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.9rem 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.045);
+        transition: background 0.15s;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .task-item:last-child { border-bottom: none; }
+
+    .task-item:hover { background: #f8faff; }
+
+    .task-item-label {
+        font-size: 0.875rem;
+        color: #334155;
+    }
+
+    .task-item-label strong {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1rem;
+        color: #0f1829;
+        display: block;
+        line-height: 1.2;
+    }
+
+    .badge-count {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 0.35em 0.75em;
+        border-radius: 50px;
+        min-width: 32px;
+        text-align: center;
+    }
+
+    /* ─── QUICK ACTION BUTTONS ───────────────────────── */
+    .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 0.9rem 1.2rem;
+        border-radius: 12px;
+        border: 1.5px solid;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.18s ease;
+    }
+
+    .action-btn .action-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .action-btn-primary {
+        border-color: rgba(46,91,255,0.25);
+        color: #2e5bff;
+        background: rgba(46,91,255,0.04);
+    }
+    .action-btn-primary .action-icon { background: rgba(46,91,255,0.1); }
+    .action-btn-primary:hover { background: #2e5bff; color: #fff; border-color: #2e5bff; }
+    .action-btn-primary:hover .action-icon { background: rgba(255,255,255,0.2); }
+
+    .action-btn-success {
+        border-color: rgba(16,185,129,0.25);
+        color: #059669;
+        background: rgba(16,185,129,0.04);
+    }
+    .action-btn-success .action-icon { background: rgba(16,185,129,0.1); }
+    .action-btn-success:hover { background: #10b981; color: #fff; border-color: #10b981; }
+    .action-btn-success:hover .action-icon { background: rgba(255,255,255,0.2); }
+
+    .action-btn-info {
+        border-color: rgba(6,182,212,0.25);
+        color: #0891b2;
+        background: rgba(6,182,212,0.04);
+    }
+    .action-btn-info .action-icon { background: rgba(6,182,212,0.1); }
+    .action-btn-info:hover { background: #06b6d4; color: #fff; border-color: #06b6d4; }
+    .action-btn-info:hover .action-icon { background: rgba(255,255,255,0.2); }
+
+    /* ─── PAGE HEADER ────────────────────────────────── */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .page-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.55rem;
+        font-weight: 800;
+        color: #0f1829;
+        letter-spacing: -0.5px;
+        margin: 0;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: 3px;
+    }
+
+    .welcome-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .role-badge {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        background: var(--primary-light);
+        color: var(--primary);
+        border: 1px solid rgba(46,91,255,0.2);
+        padding: 0.3em 0.85em;
+        border-radius: 50px;
+    }
+
+    .date-chip {
+        font-size: 0.78rem;
+        color: #64748b;
+    }
+
+    /* ─── CHART WRAPPER ──────────────────────────────── */
+    .chart-wrapper {
+        position: relative;
+        padding: 0.5rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ─── PAGE HEADER ─────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h2 class="page-title">Dashboard Overview</h2>
+        <p class="page-subtitle">Welcome back, <strong>{{ user.get_full_name|default:user.username }}</strong> — here's what's happening today.</p>
+    </div>
+    <div class="welcome-badge d-none d-sm-flex">
+        {% if user_groups %}
+        <span class="role-badge">{{ user_groups|join:", " }}</span>
+        {% endif %}
+        <span class="date-chip"><i class="bi bi-calendar3 me-1"></i> <span id="today-date"></span></span>
+    </div>
+</div>
+
+<!-- ─── STAT CARDS ──────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+
+    {% if 'receptionist' in user_groups or 'records' in user_groups or 'admin' in user_groups or user.is_superuser %}
+    <div class="col-6 col-xl-3">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon"><i class="bi bi-person-plus-fill"></i></div>
+            <div class="stat-label">New Patients Today</div>
+            <div class="stat-value">{{ new_patients_today|default:0 }}</div>
+            <div class="stat-sub"><i class="bi bi-arrow-up-short"></i> Registered today</div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if 'finance' in user_groups or 'admin' in user_groups or user.is_superuser %}
+    <div class="col-6 col-xl-3">
+        <div class="stat-card stat-danger">
+            <div class="stat-icon"><i class="bi bi-receipt-cutoff"></i></div>
+            <div class="stat-label">Pending Bills</div>
+            <div class="stat-value">{{ pending_bills_count|default:0 }}</div>
+            <div class="stat-sub"><i class="bi bi-exclamation-circle"></i> Awaiting payment</div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if 'doctor' in user_groups or 'records' in user_groups or 'admin' in user_groups or user.is_superuser %}
+    <div class="col-6 col-xl-3">
+        <div class="stat-card stat-warning">
+            <div class="stat-icon"><i class="bi bi-calendar-event-fill"></i></div>
+            <div class="stat-label">Today's Appointments</div>
+            <div class="stat-value">{{ todays_appointments_count|default:0 }}</div>
+            <div class="stat-sub"><i class="bi bi-clock"></i> Scheduled today</div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if 'finance' in user_groups or 'admin' in user_groups or user.is_superuser %}
+    <div class="col-6 col-xl-3">
+        <div class="stat-card stat-success">
+            <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="stat-label">Monthly Revenue</div>
+            <div class="stat-value" style="font-size:1.5rem;">KES {{ monthly_revenue|floatformat:0|intcomma|default:"0" }}</div>
+            <div class="stat-sub"><i class="bi bi-calendar-month"></i> This month</div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- ─── CHARTS & PANELS ─────────────────────────────────── -->
+<div class="row g-4">
+
+    <!-- Patient Registration Trend -->
+    <div class="col-lg-8">
+        <div class="panel h-100">
+            <div class="panel-header">
+                <h5 class="panel-title"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i>Patient Registrations — Last 12 Months</h5>
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3" style="font-size:0.72rem; font-weight:600;">Monthly</span>
+            </div>
+            <div class="panel-body">
+                <div class="chart-wrapper">
+                    <canvas id="patientChart" height="270"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-lg-4 d-flex flex-column gap-4">
+
+        <!-- Pending Tasks -->
+        <div class="panel">
+            <div class="panel-header">
+                <h5 class="panel-title"><i class="bi bi-ui-checks text-warning me-2"></i>Pending Tasks</h5>
+                {% if pending_lab_requests or pending_prescriptions or pending_bills_count %}
+                <span class="badge bg-danger rounded-pill" style="font-size:0.72rem;">Action needed</span>
+                {% endif %}
+            </div>
+
+            {% if 'doctor' in user_groups or 'admin' in user_groups or user.is_superuser %}
+            <div class="task-item">
+                <div class="task-item-label">
+                    <strong>{{ pending_lab_requests|default:0 }}</strong>
+                    Pending Lab Requests
+                </div>
+                <span class="badge-count bg-warning text-white">{{ pending_lab_requests|default:0 }}</span>
+            </div>
+            <div class="task-item">
+                <div class="task-item-label">
+                    <strong>{{ pending_prescriptions|default:0 }}</strong>
+                    Pending Prescriptions
+                </div>
+                <span class="badge-count bg-warning text-white">{{ pending_prescriptions|default:0 }}</span>
+            </div>
+            {% endif %}
+
+            {% if 'finance' in user_groups or 'admin' in user_groups or user.is_superuser %}
+            <a href="{% url 'payment_history' %}" class="task-item">
+                <div class="task-item-label">
+                    <strong>{{ pending_bills_count|default:0 }}</strong>
+                    Unpaid Bills
+                </div>
+                <span class="badge-count bg-danger text-white">{{ pending_bills_count|default:0 }}</span>
+            </a>
+            {% endif %}
+
+            {% if not pending_lab_requests and not pending_prescriptions and not pending_bills_count %}
+            <div class="task-item justify-content-center text-muted py-4" style="flex-direction:column; gap:6px;">
+                <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                <span style="font-size:0.85rem;">All clear — no pending tasks</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="panel">
+            <div class="panel-header">
+                <h5 class="panel-title"><i class="bi bi-lightning-charge-fill text-primary me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="panel-body d-flex flex-column gap-2">
+
+                {% if 'receptionist' in user_groups or 'admin' in user_groups or user.is_superuser %}
+                <a href="{% url 'register_patient' %}" class="action-btn action-btn-primary">
+                    <div class="action-icon"><i class="bi bi-person-plus-fill"></i></div>
+                    Register New Patient
+                </a>
+                {% endif %}
+
+                {% if 'doctor' in user_groups or 'admin' in user_groups or user.is_superuser %}
+                <a href="{% url 'clerking_patient' %}" class="action-btn action-btn-success">
+                    <div class="action-icon"><i class="bi bi-clipboard2-pulse-fill"></i></div>
+                    Start Clerking
+                </a>
+                {% endif %}
+
+                {% if 'finance' in user_groups or 'admin' in user_groups or user.is_superuser %}
+                <a href="{% url 'financial_summary' %}" class="action-btn action-btn-info">
+                    <div class="action-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                    Financial Report
+                </a>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // ─── Today's date chip ─────────────────────────────
+    const dateEl = document.getElementById('today-date');
+    if (dateEl) {
+        dateEl.textContent = new Date().toLocaleDateString('en-KE', {
+            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+        });
+    }
+
+    // ─── Patient Registrations Chart ──────────────────
+    const ctx = document.getElementById('patientChart').getContext('2d');
+
+    // Subtle gradient fill
+    const gradient = ctx.createLinearGradient(0, 0, 0, 270);
+    gradient.addColorStop(0, 'rgba(46,91,255,0.22)');
+    gradient.addColorStop(1, 'rgba(46,91,255,0.01)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ monthly_labels|safe }},
+            datasets: [{
+                label: 'Patient Registrations',
+                data: {{ monthly_registrations|safe }},
+                borderColor: '#2e5bff',
+                backgroundColor: gradient,
+                fill: true,
+                tension: 0.42,
+                pointBackgroundColor: '#2e5bff',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2.5,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                borderWidth: 2.5
+            }]
+        },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0f1829',
+                    titleColor: '#94a3b8',
+                    bodyColor: '#fff',
+                    padding: 12,
+                    borderRadius: 10,
+                    displayColors: false,
+                    callbacks: {
+                        title: items => items[0].label,
+                        label: item => ` ${item.raw} patients registered`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.045)', drawBorder: false },
+                    ticks: { font: { size: 11 }, color: '#94a3b8' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 }, color: '#94a3b8' }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

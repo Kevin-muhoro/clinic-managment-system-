@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointment Slip – {{ appointment.appointment_number }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+    :root {
+      --ink: #0d1117;
+      --ink-soft: #3a3f4b;
+      --ink-muted: #7c8494;
+      --surface: #f5f6f8;
+      --border: #e4e7ed;
+      --accent: #1a6ef5;
+      --accent-soft: #e8f0fe;
+      --green: #12b76a;
+      --green-soft: #e6f7f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--surface);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    /* ── Action bar (hidden when printing) ── */
+    .action-bar {
+      display: flex;
+      gap: .75rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-print, .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .65rem 1.4rem;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: .82rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      transition: all .18s;
+    }
+    .btn-print {
+      background: var(--ink);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(13,17,23,.15);
+    }
+    .btn-print:hover { background: var(--accent); box-shadow: 0 4px 16px rgba(26,110,245,.3); transform: translateY(-1px); }
+    .btn-back {
+      background: transparent;
+      color: var(--ink-soft);
+      border: 1.5px solid var(--border);
+    }
+    .btn-back:hover { background: #fff; color: var(--ink); border-color: var(--ink-soft); }
+
+    /* ── Slip card ── */
+    .slip {
+      background: #fff;
+      width: 100%;
+      max-width: 620px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 24px rgba(13,17,23,.1);
+      overflow: hidden;
+    }
+
+    /* Header band */
+    .slip-header {
+      background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 100%);
+      padding: 1.75rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .slip-header::before {
+      content: '';
+      position: absolute;
+      top: -50px; right: -50px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(26,110,245,.2) 0%, transparent 70%);
+    }
+    .slip-clinic {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff;
+      position: relative;
+      z-index: 1;
+      margin-bottom: .3rem;
+    }
+    .slip-clinic span { color: #7fb3ff; }
+    .slip-tagline {
+      font-size: .78rem;
+      color: rgba(255,255,255,.45);
+      font-weight: 300;
+      position: relative;
+      z-index: 1;
+    }
+    .slip-appt-badge {
+      position: absolute;
+      top: 1.5rem; right: 1.75rem;
+      background: rgba(26,110,245,.2);
+      border: 1px solid rgba(26,110,245,.35);
+      border-radius: 8px;
+      padding: .45rem .9rem;
+      font-family: 'Syne', sans-serif;
+      font-size: .82rem;
+      font-weight: 700;
+      color: #7fb3ff;
+      z-index: 1;
+      letter-spacing: .04em;
+    }
+
+    /* Status strip */
+    .slip-status {
+      background: var(--green-soft);
+      border-bottom: 1px solid rgba(18,183,106,.2);
+      padding: .6rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .82rem;
+      color: #0a6640;
+      font-weight: 500;
+    }
+    .slip-status::before {
+      content: '';
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+
+    /* Body */
+    .slip-body { padding: 1.75rem 2rem; }
+
+    .slip-section-label {
+      font-family: 'Syne', sans-serif;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: .75rem;
+      padding-bottom: .45rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .slip-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .9rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .slip-field {}
+    .slip-key {
+      font-size: .7rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: .18rem;
+    }
+    .slip-val {
+      font-size: .92rem;
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .slip-val.accent { color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 700; }
+
+    .slip-full { grid-column: 1 / -1; }
+
+    /* Footer */
+    .slip-footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .slip-note {
+      font-size: .78rem;
+      color: var(--ink-muted);
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+    }
+    .slip-note i { color: var(--accent); }
+    .slip-generated {
+      font-size: .72rem;
+      color: var(--ink-muted);
+      font-weight: 300;
+    }
+
+    /* ── Print styles ── */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .action-bar { display: none !important; }
+      .slip {
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Action buttons (hidden on print) -->
+  <div class="action-bar">
+    <a href="{% url 'todays_appointments' %}" class="btn-back">
+      <i class="bi bi-arrow-left"></i> Back to Appointments
+    </a>
+    <button class="btn-print" onclick="window.print()">
+      <i class="bi bi-printer-fill"></i> Print / Download Slip
+    </button>
+  </div>
+
+  <!-- Slip -->
+  <div class="slip">
+
+    <!-- Header -->
+    <div class="slip-header">
+      <div class="slip-clinic">Clinic <span>PRO</span></div>
+      <div class="slip-tagline">Official Appointment Slip — please retain for your records</div>
+      <div class="slip-appt-badge"># {{ appointment.appointment_number }}</div>
+    </div>
+
+    <!-- Status -->
+    <div class="slip-status">
+      Appointment confirmed &amp; booked successfully
+    </div>
+
+    <!-- Body -->
+    <div class="slip-body">
+
+      <div class="slip-section-label">Patient Information</div>
+      <div class="slip-grid">
+        <div class="slip-field">
+          <div class="slip-key">Full Name</div>
+          <div class="slip-val">{{ appointment.patient.full_name }}</div>
+        </div>
+        <div class="slip-field">
+          <div class="slip-key">OP Number</div>
+          <div class="slip-val accent">{{ appointment.patient.op_number }}</div>
+        </div>
+      </div>
+
+      <div class="slip-section-label">Appointment Details</div>
+      <div class="slip-grid">
+        <div class="slip-field">
+          <div class="slip-key">Appointment No.</div>
+          <div class="slip-val accent">{{ appointment.appointment_number }}</div>
+        </div>
+        <div class="slip-field">
+          <div class="slip-key">Date</div>
+          <div class="slip-val">{{ appointment.appointment_date|date:"d F Y"|default:"To be confirmed" }}</div>
+        </div>
+        <div class="slip-field">
+          <div class="slip-key">Time</div>
+          <div class="slip-val">{{ appointment.appointment_time|time:"H:i"|default:"To be confirmed" }}</div>
+        </div>
+        <div class="slip-field">
+          <div class="slip-key">Status</div>
+          <div class="slip-val">{{ appointment.get_status_display }}</div>
+        </div>
+        <div class="slip-field slip-full">
+          <div class="slip-key">Disease Category</div>
+          <div class="slip-val">{{ appointment.disease_category|default:"General" }}</div>
+        </div>
+        <div class="slip-field slip-full">
+          <div class="slip-key">Assigned Doctor</div>
+          <div class="slip-val">Dr. {{ appointment.doctor.get_full_name|default:appointment.doctor.username }}</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="slip-footer">
+      <span class="slip-note">
+        <i class="bi bi-clock"></i>
+        Please arrive 15 minutes before your scheduled time
+      </span>
+      <span class="slip-generated">
+        Generated {{ appointment.created_at|date:"d M Y, H:i" }}
+      </span>
+    </div>
+
+  </div>
+
+</body>
+</html>

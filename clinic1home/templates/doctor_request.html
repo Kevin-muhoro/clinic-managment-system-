@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'patient_card' patient.op_number %}">Patient Card</a></li>
+                    <li class="breadcrumb-item active">Doctor Requests</li>
+                </ol>
+            </nav>
+            <h2>
+                <i class="bi bi-prescription2 me-2 text-primary"></i>
+                Doctor's Orders for {{ patient.full_name }}
+            </h2>
+            <div class="text-muted">
+                OP: {{ patient.op_number }} • {{ patient.phone }}
+            </div>
+        </div>
+        <a href="{% url 'patient_card' patient.op_number %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="alert alert-info mb-4">
+        {% for message in messages %}
+        {{ message }}<br>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Saved Orders -->
+    {% if saved_prescriptions or saved_lab_requests %}
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5>Saved Orders (this visit)</h5>
+        </div>
+        <div class="card-body">
+            {% if saved_prescriptions %}
+            <h6 class="text-success">Prescriptions</h6>
+            <table class="table table-sm table-bordered mb-4">
+                <thead>
+                    <tr><th>Drug</th><th>Qty</th><th>Instructions</th></tr>
+                </thead>
+                <tbody>
+                    {% for p in saved_prescriptions %}
+                    <tr>
+                        <td>{{ p.drug.name|default:"—" }}</td>
+                        <td>{{ p.quantity }}</td>
+                        <td>{{ p.notes|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+            {% if saved_lab_requests %}
+            <h6 class="text-info">Lab Tests</h6>
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr><th>Test</th><th>Notes</th></tr>
+                </thead>
+                <tbody>
+                    {% for l in saved_lab_requests %}
+                    <tr>
+                        <td>{{ l.lab_test.name|default:"—" }}</td>
+                        <td>{{ l.notes|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Prescriptions -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                Prescriptions
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Drug *</th>
+                                <th>Quantity *</th>
+                                <th>Instructions</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="pres-rows">
+                            {{ pres_formset.management_form }}
+                            {% for form in pres_formset %}
+                            <tr class="pres-row">
+                                <td>{{ form.drug }}{{ form.drug.errors }}</td>
+                                <td>{{ form.quantity }}{{ form.quantity.errors }}</td>
+                                <td>{{ form.notes }}{{ form.notes.errors }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-danger pres-remove">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-3 text-center">
+                    <button type="button" id="add-prescription" class="btn btn-outline-success">
+                        <i class="bi bi-plus-circle"></i> Add Prescription
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lab Requests -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                Lab Requests
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Test *</th>
+                                <th>Notes</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="lab-rows">
+                            {{ lab_formset.management_form }}
+                            {% for form in lab_formset %}
+                            <tr class="lab-row">
+                                <td>{{ form.lab_test }}{{ form.lab_test.errors }}</td>
+                                <td>{{ form.notes }}{{ form.notes.errors }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-danger lab-remove">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-3 text-center">
+                    <button type="button" id="add-lab" class="btn btn-outline-info">
+                        <i class="bi bi-plus-circle"></i> Add Lab Test
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary btn-lg px-5">
+                <i class="bi bi-save me-2"></i> Save All Orders
+            </button>
+        </div>
+    </form>
+
+</div>
+
+<!-- Hidden Templates -->
+<template id="pres-template">
+    <tr class="pres-row">
+        <td>{{ pres_formset.empty_form.drug }}</td>
+        <td>{{ pres_formset.empty_form.quantity }}</td>
+        <td>{{ pres_formset.empty_form.notes }}</td>
+        <td>
+            <button type="button" class="btn btn-sm btn-danger pres-remove">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<template id="lab-template">
+    <tr class="lab-row">
+        <td>{{ lab_formset.empty_form.lab_test }}</td>
+        <td>{{ lab_formset.empty_form.notes }}</td>
+        <td>
+            <button type="button" class="btn btn-sm btn-danger lab-remove">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<!-- JavaScript - Final Fixed Version -->
+<script>
+console.log("Doctor Request JS - FIXED & WORKING - 2025");
+
+function addRow(type) {
+    console.log("Add clicked for:", type);
+
+    const container = document.getElementById(type + '-rows');
+    const totalForms = document.getElementById('id_' + type + '-TOTAL_FORMS');
+
+    if (!container) {
+        console.error("Container missing: #" + type + "-rows");
+        return;
+    }
+    if (!totalForms) {
+        console.error("TOTAL_FORMS missing: #id_" + type + "-TOTAL_FORMS");
+        return;
+    }
+
+    const count = parseInt(totalForms.value || '0');
+    console.log("Current form count:", count);
+
+    const template = document.getElementById(type + '-template');
+    if (!template) {
+        console.error("Template missing: #" + type + "-template");
+        return;
+    }
+
+    const newRow = template.content.cloneNode(true).querySelector('tr');
+
+    // Update field names and IDs
+    newRow.querySelectorAll('[name],[id]').forEach(el => {
+        if (el.name) el.name = el.name.replace('__prefix__', count);
+        if (el.id) el.id = el.id.replace('__prefix__', count);
+    });
+
+    container.appendChild(newRow);
+    totalForms.value = count + 1;
+
+    // Attach remove listener to new button
+    const removeBtn = newRow.querySelector('.' + type + '-remove');
+    if (removeBtn) {
+        removeBtn.addEventListener('click', () => removeRow(removeBtn, type));
+    }
+
+    console.log("Row added successfully. New count:", totalForms.value);
+}
+
+function removeRow(btn, type) {
+    console.log("Remove clicked for:", type);
+
+    const row = btn.closest('tr');
+    if (!row) return;
+
+    const container = document.getElementById(type + '-rows');
+    const totalForms = document.getElementById('id_' + type + '-TOTAL_FORMS');
+
+    if (!container || !totalForms) return;
+
+    row.remove();
+    totalForms.value = parseInt(totalForms.value) - 1;
+
+    // Renumber remaining rows
+    container.querySelectorAll('tr').forEach((r, index) => {
+        r.querySelectorAll('[name],[id]').forEach(el => {
+            if (el.name) el.name = el.name.replace(new RegExp(type + '-\\d+'), type + '-' + index);
+            if (el.id) el.id = el.id.replace(new RegExp(type + '-\\d+'), type + '-' + index);
+        });
+    });
+
+    console.log("Row removed. New count:", totalForms.value);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded - attaching buttons");
+
+    const addPresBtn = document.getElementById('add-prescription');
+    const addLabBtn = document.getElementById('add-lab');
+
+    if (addPresBtn) {
+        addPresBtn.addEventListener('click', () => addRow('pres'));
+        console.log("Add Prescription button attached successfully");
+    } else {
+        console.error("Button #add-prescription NOT FOUND - add id=\"add-prescription\" to the button");
+    }
+
+    if (addLabBtn) {
+        addLabBtn.addEventListener('click', () => addRow('lab'));
+        console.log("Add Lab button attached successfully");
+    } else {
+        console.error("Button #add-lab NOT FOUND - add id=\"add-lab\" to the button");
+    }
+
+    // Initial remove buttons
+    document.querySelectorAll('.pres-remove').forEach(btn => {
+        btn.addEventListener('click', () => removeRow(btn, 'pres'));
+    });
+
+    document.querySelectorAll('.lab-remove').forEach(btn => {
+        btn.addEventListener('click', () => removeRow(btn, 'lab'));
+    });
+
+    console.log("Setup complete - ready to add/remove rows");
+});
+</script>
+
+{% endblock %}

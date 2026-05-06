@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+  :root {
+    --ink: #0d1117;
+    --ink-soft: #3a3f4b;
+    --ink-muted: #7c8494;
+    --surface: #f5f6f8;
+    --card: #ffffff;
+    --border: #e4e7ed;
+    --accent: #1a6ef5;
+    --accent-soft: #e8f0fe;
+    --accent-glow: rgba(26,110,245,0.12);
+    --green: #12b76a;
+    --green-soft: #e6f7f0;
+    --amber: #f79009;
+    --amber-soft: #fef3e2;
+    --red: #f04438;
+    --red-soft: #fef0ee;
+    --shadow-sm: 0 1px 3px rgba(13,17,23,0.06);
+    --shadow-md: 0 4px 20px rgba(13,17,23,0.09);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  .ta { box-sizing: border-box; padding: 2.5rem 2rem; max-width: 1200px; margin: 0 auto; font-family: 'DM Sans', sans-serif; color: var(--ink); }
+  .ta *, .ta *::before, .ta *::after { box-sizing: border-box; }
+
+  /* Header */
+  .ta-hdr        { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; animation: taUp .38s ease both; }
+  .ta-eyebrow    { font-family: 'Syne', sans-serif; font-size: .66rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); margin: 0 0 .28rem; }
+  .ta-title      { font-family: 'Syne', sans-serif; font-size: 1.85rem; font-weight: 800; color: var(--ink); margin: 0 0 .2rem; line-height: 1.15; }
+  .ta-sub        { font-size: .88rem; color: var(--ink-muted); font-weight: 300; margin: 0; }
+  .ta-sub strong { color: var(--ink-soft); font-weight: 600; }
+
+  .ta-book-btn   { display: inline-flex !important; align-items: center !important; gap: .45rem !important; background: var(--ink) !important; color: #fff !important; font-family: 'Syne', sans-serif !important; font-size: .8rem !important; font-weight: 700 !important; letter-spacing: .05em !important; text-transform: uppercase !important; padding: .65rem 1.2rem !important; border-radius: var(--radius-sm) !important; text-decoration: none !important; border: none !important; transition: background .2s, transform .15s, box-shadow .2s !important; white-space: nowrap; flex-shrink: 0; line-height: 1 !important; }
+  .ta-book-btn:hover { background: var(--accent) !important; color: #fff !important; transform: translateY(-1px) !important; box-shadow: 0 6px 18px var(--accent-glow) !important; }
+
+  /* Stats row */
+  .ta-stats      { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 1rem; margin-bottom: 1.5rem; animation: taUp .42s .05s ease both; }
+  .ta-stat       { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.2rem; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: .85rem; }
+  .ta-stat-icon  { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .ta-stat-icon.blue   { background: var(--accent-soft); color: var(--accent); }
+  .ta-stat-icon.green  { background: var(--green-soft);  color: var(--green); }
+  .ta-stat-icon.amber  { background: var(--amber-soft);  color: var(--amber); }
+  .ta-stat-lbl   { font-size: .7rem; font-weight: 500; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .12rem; }
+  .ta-stat-val   { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--ink); line-height: 1; }
+
+  /* Table card */
+  .ta-card       { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-md); overflow: hidden; animation: taUp .45s .1s ease both; }
+  .ta-card-head  { padding: 1rem 1.4rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem; background: var(--surface); }
+  .ta-card-title { font-family: 'Syne', sans-serif; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); display: flex; align-items: center; gap: .5rem; }
+  .ta-card-title::before { content: ''; display: inline-block; width: 4px; height: 16px; background: var(--accent); border-radius: 2px; }
+  .ta-date-tag   { font-size: .78rem; color: var(--ink-muted); background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: .24rem .7rem; }
+
+  table          { width: 100%; border-collapse: collapse; }
+  thead tr       { background: var(--surface); border-bottom: 2px solid var(--border); }
+  thead th       { font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted); padding: .82rem 1.1rem; text-align: left; white-space: nowrap; }
+  thead th.ctr   { text-align: center; }
+  tbody tr       { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #fafbfd; }
+  tbody td       { padding: .9rem 1.1rem; font-size: .87rem; color: var(--ink-soft); vertical-align: middle; }
+  tbody td.ctr   { text-align: center; }
+
+  .row-num       { font-size: .76rem; color: var(--ink-muted); font-weight: 300; }
+
+  .appt-badge    { display: inline-flex; align-items: center; gap: .28rem; background: var(--accent-soft); color: var(--accent); font-family: 'Syne', sans-serif; font-size: .76rem; font-weight: 700; padding: .28rem .62rem; border-radius: 6px; border: 1px solid rgba(26,110,245,.15); white-space: nowrap; }
+
+  .patient-cell  { display: flex; align-items: center; gap: .55rem; }
+  .pat-avatar    { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-soft), #dde9ff); color: var(--accent); font-family: 'Syne', sans-serif; font-size: .65rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid rgba(26,110,245,.15); }
+  .pat-name      { font-weight: 500; color: var(--ink); font-size: .88rem; }
+
+  .time-cell     { font-family: 'Syne', sans-serif; font-size: .82rem; font-weight: 700; color: var(--ink); }
+
+  .cat-tag       { display: inline-block; font-size: .78rem; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--border); border-radius: 5px; padding: .2rem .55rem; white-space: nowrap; }
+
+  /* Status badges */
+  .st-badge      { display: inline-flex; align-items: center; gap: .3rem; font-size: .74rem; font-weight: 600; font-family: 'Syne', sans-serif; padding: .25rem .65rem; border-radius: 999px; white-space: nowrap; }
+  .st-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .st-booked     { background: var(--amber-soft); color: #b45309; border: 1px solid rgba(247,144,9,.2); }
+  .st-booked::before { background: var(--amber); }
+  .st-confirmed  { background: var(--green-soft); color: #065f46; border: 1px solid rgba(18,183,106,.2); }
+  .st-confirmed::before { background: var(--green); }
+  .st-other      { background: var(--surface); color: var(--ink-muted); border: 1px solid var(--border); }
+  .st-other::before { background: var(--ink-muted); }
+
+  /* Empty state */
+  .ta-empty      { padding: 4rem 2rem; text-align: center; }
+  .ta-empty-icon { width: 68px; height: 68px; border-radius: 50%; background: var(--surface); border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--ink-muted); margin: 0 auto 1.2rem; }
+  .ta-empty-title{ font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--ink); margin-bottom: .35rem; }
+  .ta-empty-sub  { font-size: .87rem; color: var(--ink-muted); font-weight: 300; margin-bottom: 1.4rem; }
+
+  @keyframes taUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 640px) {
+    .ta { padding: 1rem .85rem; }
+    .ta-title { font-size: 1.4rem; }
+    tbody td { padding: .75rem .7rem; }
+  }
+</style>
+
+<div class="ta">
+
+  <!-- Header -->
+  <div class="ta-hdr">
+    <div>
+      <p class="ta-eyebrow">Daily Schedule</p>
+      <h1 class="ta-title">Today's Appointments</h1>
+      <p class="ta-sub">Showing appointments for <strong>{{ today|date:"d F Y" }}</strong></p>
+    </div>
+    <a href="{% url 'book_appointment' %}" class="ta-book-btn">
+      <i class="bi bi-calendar-plus"></i> Book New
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="ta-stats">
+    <div class="ta-stat">
+      <div class="ta-stat-icon blue"><i class="bi bi-calendar2-day"></i></div>
+      <div>
+        <div class="ta-stat-lbl">Total Today</div>
+        <div class="ta-stat-val">{{ appointments|length }}</div>
+      </div>
+    </div>
+    <div class="ta-stat">
+      <div class="ta-stat-icon green"><i class="bi bi-check-circle"></i></div>
+      <div>
+        <div class="ta-stat-lbl">Confirmed</div>
+        <div class="ta-stat-val">{{ appointments|dictsort:"status"|length }}</div>
+      </div>
+    </div>
+    <div class="ta-stat">
+      <div class="ta-stat-icon amber"><i class="bi bi-hourglass-split"></i></div>
+      <div>
+        <div class="ta-stat-lbl">Pending</div>
+        <div class="ta-stat-val">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table card -->
+  <div class="ta-card">
+    <div class="ta-card-head">
+      <div class="ta-card-title">Appointment Records</div>
+      <span class="ta-date-tag"><i class="bi bi-calendar3"></i> {{ today|date:"d M Y" }}</span>
+    </div>
+
+    {% if appointments %}
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th class="ctr">#</th>
+            <th>Appt No</th>
+            <th>Patient</th>
+            <th>Time</th>
+            <th>Category</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for appt in appointments %}
+          <tr>
+            <td class="ctr row-num">{{ forloop.counter }}</td>
+            <td><span class="appt-badge"><i class="bi bi-hash"></i>{{ appt.appointment_number }}</span></td>
+            <td>
+              <div class="patient-cell">
+                <div class="pat-avatar">{{ appt.patient.full_name|slice:":2"|upper }}</div>
+                <span class="pat-name">{{ appt.patient.full_name }}</span>
+              </div>
+            </td>
+            <td><span class="time-cell">{{ appt.appointment_time|time:"H:i"|default:"—" }}</span></td>
+            <td><span class="cat-tag">{{ appt.disease_category|default:"General" }}</span></td>
+            <td>
+              <span class="st-badge {% if appt.status == 'booked' %}st-booked{% elif appt.status == 'confirmed' %}st-confirmed{% else %}st-other{% endif %}">
+                {{ appt.get_status_display }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <div class="ta-empty">
+      <div class="ta-empty-icon"><i class="bi bi-calendar-x"></i></div>
+      <div class="ta-empty-title">No appointments today</div>
+      <p class="ta-empty-sub">Nothing scheduled for {{ today|date:"d F Y" }}</p>
+      <a href="{% url 'book_appointment' %}" class="ta-book-btn">
+        <i class="bi bi-calendar-plus"></i> Book First Appointment
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}

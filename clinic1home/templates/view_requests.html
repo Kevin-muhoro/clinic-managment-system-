@@ -1,0 +1,1019 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container-fluid py-4">
+    <!-- Search Card - Enhanced -->
+    <div class="card modern-card border-0 mb-5">
+        <div class="card-body p-5 text-center">
+            <div class="search-icon-wrapper mb-4">
+                <i class="bi bi-receipt-cutoff"></i>
+            </div>
+            <h3 class="fw-bold mb-3 gradient-text">Patient Requests & Billing</h3>
+            <p class="text-muted mb-4 fs-5">Enter patient's OP number to view requests, bills, and make payments</p>
+
+            {% if error_message %}
+            <div class="alert alert-modern alert-danger alert-dismissible fade show mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="alert-icon me-3">
+                        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <strong class="d-block">Error</strong>
+                        <span>{{ error_message }}</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            <form method="get" class="row g-3 justify-content-center">
+                <div class="col-md-7 col-lg-6">
+                    <div class="search-input-group">
+                        <span class="search-prefix">
+                            <i class="bi bi-upc-scan"></i>
+                        </span>
+                        <input type="text" name="op_number" class="form-control search-input"
+                               placeholder="Enter OP Number (e.g. OP00001)"
+                               value="{{ search_op }}" required autofocus>
+                        <button type="submit" class="search-btn">
+                            <i class="bi bi-search me-2"></i> Search
+                        </button>
+                    </div>
+                    <div class="search-hint mt-2 text-start">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Enter the patient's unique OP number to access billing information
+                        </small>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if patient %}
+    <!-- Patient Header - Enhanced -->
+    <div class="patient-profile-header mb-5">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center">
+                    <div class="profile-avatar me-4">
+                        {{ patient.full_name|make_list|first }}
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-2">{{ patient.full_name }}</h2>
+                        <div class="patient-meta">
+                            <span class="meta-item">
+                                <i class="bi bi-upc-scan me-2 text-primary"></i>
+                                <strong>{{ patient.op_number }}</strong>
+                            </span>
+                            <span class="meta-item">
+                                <i class="bi bi-telephone me-2 text-primary"></i>
+                                {{ patient.phone }}
+                            </span>
+                            {% if patient.gender == 'M' %}
+                            <span class="meta-item">
+                                <i class="bi bi-gender-male me-2 text-info"></i>
+                                Male
+                            </span>
+                            {% endif %}
+                            {% if patient.gender == 'F' %}
+                            <span class="meta-item">
+                                <i class="bi bi-gender-female me-2 text-info"></i>
+                                Female
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'patient_card' patient.op_number %}" class="btn btn-modern-outline">
+                    <i class="bi bi-folder2-open me-2"></i>
+                    View Patient Card
+                    <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bill Summary - Enhanced with Registration & Consultation Fees -->
+    {% if bill %}
+    <div class="card modern-card bill-card border-0 mb-5">
+        <div class="card-header bill-header">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon me-3">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-white">Current Bill: {{ bill.bill_number }}</h4>
+                        <p class="text-white-50 mb-0 small">{{ bill.date|date:"d F Y" }}</p>
+                    </div>
+                </div>
+                <div class="bill-status">
+                    <span class="status-badge {% if bill.status == 'PAID' %}success{% elif bill.status == 'PARTIAL' %}warning{% else %}danger{% endif %}">
+                        {{ bill.status }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <!-- Fees Row (NEW) -->
+            <div class="row text-center g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="bill-detail-item">
+                        <div class="detail-icon bg-primary-soft">
+                            <i class="bi bi-person-plus text-primary"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Registration Fee</span>
+                            <span class="detail-value total">KES {{ bill.registration_fee|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bill-detail-item">
+                        <div class="detail-icon bg-info-soft">
+                            <i class="bi bi-chat-dots text-info"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Consultation Fee</span>
+                            <span class="detail-value total">KES {{ bill.consultation_fee|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Existing Total, Paid, Balance -->
+                <div class="col-md-3">
+                    <div class="bill-detail-item">
+                        <div class="detail-icon bg-primary-soft">
+                            <i class="bi bi-calculator text-primary"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Total Amount</span>
+                            <span class="detail-value total">KES {{ bill.total_amount|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bill-detail-item">
+                        <div class="detail-icon bg-success-soft">
+                            <i class="bi bi-check-circle text-success"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Paid Amount</span>
+                            <span class="detail-value paid">KES {{ bill.paid_amount|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="bill-detail-item">
+                        <div class="detail-icon {% if bill.balance > 0 %}bg-warning-soft{% else %}bg-success-soft{% endif %}">
+                            <i class="bi {% if bill.balance > 0 %}bi-exclamation-triangle text-warning{% else %}bi-check-circle-fill text-success{% endif %}"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Balance Due</span>
+                            <span class="detail-value {% if bill.balance > 0 %}balance{% else %}paid{% endif %}">
+                                KES {{ bill.balance|floatformat:2 }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if bill.balance > 0 %}
+            <div class="text-center mt-5">
+                <a href="{% url 'make_payment' bill.bill_number %}" class="btn-payment">
+                    <i class="bi bi-cash-coin me-2 fs-4"></i>
+                    Make Payment Now
+                    <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+                <p class="text-muted small mt-3 mb-0">
+                    <i class="bi bi-clock-history me-1"></i>
+                    Payments are processed immediately and reflected in the bill
+                </p>
+            </div>
+            {% else %}
+            <div class="text-center mt-5">
+                <div class="settled-badge">
+                    <i class="bi bi-check-circle-fill me-2 fs-4"></i>
+                    Bill fully settled — no payment required
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state-mini mb-5">
+        <div class="empty-icon-mini">
+            <i class="bi bi-receipt"></i>
+        </div>
+        <h5 class="fw-bold mb-2">No Bills Found</h5>
+        <p class="text-muted mb-0">This patient doesn't have any bills yet</p>
+    </div>
+    {% endif %}
+
+    <!-- Requests Section - Enhanced -->
+    <div class="row g-4">
+        <!-- Lab Requests -->
+        <div class="col-lg-6">
+            <div class="card modern-card border-0 h-100">
+                <div class="card-header lab-pending-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="header-icon me-3">
+                                <i class="bi bi-flask"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0 text-white">Laboratory Requests</h5>
+                                <p class="text-white-50 mb-0 small">All lab tests and investigations</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Pending Section -->
+                    <div class="requests-section mb-4">
+                        <div class="section-header pending">
+                            <i class="bi bi-hourglass-split me-2"></i>
+                            Pending Payment
+                            <span class="count-badge ms-2">{{ pending_lab|length }}</span>
+                        </div>
+
+                        {% if pending_lab %}
+                        <div class="requests-list">
+                            {% for req in pending_lab %}
+                            <div class="request-item pending">
+                                <div class="request-content">
+                                    <div class="request-icon bg-warning-soft">
+                                        <i class="bi bi-flask text-warning"></i>
+                                    </div>
+                                    <div class="request-details">
+                                        <h6 class="request-title">{{ req.lab_test.name }}</h6>
+                                        <div class="request-meta">
+                                            <span class="meta-badge">
+                                                <i class="bi bi-person"></i>
+                                                {{ req.requested_by }}
+                                            </span>
+                                            <span class="meta-badge">
+                                                <i class="bi bi-clock"></i>
+                                                {{ req.requested_at|date:"d M Y H:i" }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="request-status">
+                                    <span class="status-badge warning">Pending Payment</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-mini">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            No pending lab requests
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Paid Section -->
+                    <div class="requests-section">
+                        <div class="section-header paid">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            Paid & Completed
+                            <span class="count-badge ms-2">{{ paid_lab|length }}</span>
+                        </div>
+
+                        {% if paid_lab %}
+                        <div class="requests-list">
+                            {% for req in paid_lab %}
+                            <div class="request-item paid">
+                                <div class="request-content">
+                                    <div class="request-icon bg-success-soft">
+                                        <i class="bi bi-flask text-success"></i>
+                                    </div>
+                                    <div class="request-details">
+                                        <h6 class="request-title">{{ req.lab_test.name }}</h6>
+                                        <div class="request-meta">
+                                            <span class="meta-badge">
+                                                <i class="bi bi-person"></i>
+                                                {{ req.requested_by }}
+                                            </span>
+                                            <span class="meta-badge">
+                                                <i class="bi bi-clock"></i>
+                                                {{ req.requested_at|date:"d M Y H:i" }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="request-status">
+                                    <span class="status-badge success">
+                                        <i class="bi bi-check-circle-fill me-1"></i>
+                                        PAID
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-mini">
+                            <i class="bi bi-info-circle text-muted me-2"></i>
+                            No paid lab requests yet
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prescriptions -->
+        <div class="col-lg-6">
+            <div class="card modern-card border-0 h-100">
+                <div class="card-header pres-pending-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="header-icon me-3">
+                                <i class="bi bi-capsule"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0 text-white">Prescriptions</h5>
+                                <p class="text-white-50 mb-0 small">Medication orders and drugs</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Pending Section -->
+                    <div class="requests-section mb-4">
+                        <div class="section-header pending">
+                            <i class="bi bi-hourglass-split me-2"></i>
+                            Pending Payment
+                            <span class="count-badge ms-2">{{ pending_pres|length }}</span>
+                        </div>
+
+                        {% if pending_pres %}
+                        <div class="requests-list">
+                            {% for pres in pending_pres %}
+                            <div class="request-item pending">
+                                <div class="request-content">
+                                    <div class="request-icon bg-warning-soft">
+                                        <i class="bi bi-capsule text-warning"></i>
+                                    </div>
+                                    <div class="request-details">
+                                        <h6 class="request-title">{{ pres.quantity }} × {{ pres.drug.name }}</h6>
+                                        <div class="request-meta">
+                                            <span class="meta-badge">
+                                                <i class="bi bi-person"></i>
+                                                {{ pres.prescribed_by }}
+                                            </span>
+                                            <span class="meta-badge">
+                                                <i class="bi bi-clock"></i>
+                                                {{ pres.prescribed_at|date:"d M Y H:i" }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="request-status">
+                                    <span class="status-badge warning">Pending Payment</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-mini">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            No pending prescriptions
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Paid Section -->
+                    <div class="requests-section">
+                        <div class="section-header paid">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            Paid & Completed
+                            <span class="count-badge ms-2">{{ paid_pres|length }}</span>
+                        </div>
+
+                        {% if paid_pres %}
+                        <div class="requests-list">
+                            {% for pres in paid_pres %}
+                            <div class="request-item paid">
+                                <div class="request-content">
+                                    <div class="request-icon bg-success-soft">
+                                        <i class="bi bi-capsule text-success"></i>
+                                    </div>
+                                    <div class="request-details">
+                                        <h6 class="request-title">{{ pres.quantity }} × {{ pres.drug.name }}</h6>
+                                        <div class="request-meta">
+                                            <span class="meta-badge">
+                                                <i class="bi bi-person"></i>
+                                                {{ pres.prescribed_by }}
+                                            </span>
+                                            <span class="meta-badge">
+                                                <i class="bi bi-clock"></i>
+                                                {{ pres.prescribed_at|date:"d M Y H:i" }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="request-status">
+                                    <span class="status-badge success">
+                                        <i class="bi bi-check-circle-fill me-1"></i>
+                                        PAID
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-mini">
+                            <i class="bi bi-info-circle text-muted me-2"></i>
+                            No paid prescriptions yet
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Initial empty state (before search) - Enhanced -->
+    <div class="empty-state-card">
+        <div class="empty-state-icon">
+            <i class="bi bi-search-heart"></i>
+        </div>
+        <h3 class="fw-bold mt-4 mb-3">Search for a Patient</h3>
+        <p class="text-muted fs-5 mb-4">
+            Enter the OP number above to view all pending and paid requests,<br>
+            bills, and make payments instantly.
+        </p>
+        <div class="search-tips">
+            <h6 class="fw-bold mb-3"><i class="bi bi-lightbulb me-2 text-primary"></i>Quick Tips</h6>
+            <div class="tip-item">
+                <i class="bi bi-1-circle-fill text-primary"></i>
+                <span>OP numbers start with "OP" followed by digits (e.g., OP00001)</span>
+            </div>
+            <div class="tip-item">
+                <i class="bi bi-2-circle-fill text-primary"></i>
+                <span>Search is case-insensitive</span>
+            </div>
+            <div class="tip-item">
+                <i class="bi bi-3-circle-fill text-primary"></i>
+                <span>Recent patients appear in search history</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Modern Page Styles */
+    .gradient-text {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2rem;
+    }
+
+    /* Modern Card */
+    .modern-card {
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .modern-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px -15px rgba(0,0,0,0.15);
+    }
+
+    /* Search Icon Wrapper */
+    .search-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin: 0 auto;
+        box-shadow: 0 10px 20px -10px var(--primary);
+    }
+
+    /* Search Input Group */
+    .search-input-group {
+        display: flex;
+        align-items: stretch;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .search-input-group:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(46,91,255,0.1);
+    }
+
+    .search-prefix {
+        display: flex;
+        align-items: center;
+        padding: 0 1rem;
+        background: #f8f9fa;
+        color: var(--primary);
+        font-size: 1.2rem;
+        border-right: 2px solid #e9ecef;
+    }
+
+    .search-input {
+        flex: 1;
+        border: none !important;
+        padding: 0.8rem 1rem;
+        font-size: 1rem;
+        background: white;
+    }
+
+    .search-input:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    .search-btn {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border: none;
+        padding: 0 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .search-btn:hover {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    }
+
+    .search-hint {
+        padding-left: 0.5rem;
+    }
+
+    /* Alert Modern */
+    .alert-modern {
+        border: none;
+        border-radius: 16px;
+        padding: 1rem 1.5rem;
+    }
+
+    .alert-modern.alert-danger {
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+        color: #721c24;
+        box-shadow: 0 10px 20px -10px #dc3545;
+    }
+
+    .alert-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(255,255,255,0.5);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Patient Profile */
+    .patient-profile-header {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.02);
+        border: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .profile-avatar {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        box-shadow: 0 10px 20px -10px var(--primary);
+    }
+
+    .patient-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .meta-item {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.3rem 1rem;
+        background: #f8fafd;
+        border-radius: 30px;
+        font-size: 0.95rem;
+    }
+
+    .btn-modern-outline {
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        padding: 0.8rem 1.8rem;
+        border-radius: 14px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-modern-outline:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -10px var(--primary);
+    }
+
+    /* Bill Card */
+    .bill-card {
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .bill-header {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        padding: 1.2rem 1.5rem;
+        border: none;
+    }
+
+    .header-icon {
+        width: 45px;
+        height: 45px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        backdrop-filter: blur(5px);
+    }
+
+    .bill-status {
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        backdrop-filter: blur(5px);
+    }
+
+    .bill-detail-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.2rem;
+        background: #f8fafd;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .bill-detail-item:hover {
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transform: translateY(-2px);
+    }
+
+    .detail-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .bg-primary-soft { background: rgba(46, 91, 255, 0.1); }
+    .bg-success-soft { background: rgba(16, 185, 129, 0.1); }
+    .bg-warning-soft { background: rgba(245, 158, 11, 0.1); }
+
+    .detail-label {
+        display: block;
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+    }
+
+    .detail-value {
+        display: block;
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .detail-value.total { color: #1e293b; }
+    .detail-value.paid { color: #10b981; }
+    .detail-value.balance { color: #f59e0b; }
+
+    .btn-payment {
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        box-shadow: 0 10px 20px -10px #10b981;
+        transition: all 0.3s;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-payment:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 20px 30px -10px #10b981;
+        color: white;
+    }
+
+    .settled-badge {
+        display: inline-block;
+        padding: 1rem 2rem;
+        background: #d4edda;
+        color: #155724;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    /* Requests Section */
+    .lab-pending-header {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        padding: 1.2rem 1.5rem;
+        border: none;
+    }
+
+    .pres-pending-header {
+        background: linear-gradient(135deg, #10b981, #059669);
+        padding: 1.2rem 1.5rem;
+        border: none;
+    }
+
+    .requests-section {
+        margin-bottom: 2rem;
+    }
+
+    .section-header {
+        font-size: 1rem;
+        font-weight: 600;
+        padding-bottom: 0.75rem;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid;
+        display: flex;
+        align-items: center;
+    }
+
+    .section-header.pending {
+        color: #f59e0b;
+        border-bottom-color: #f59e0b;
+    }
+
+    .section-header.paid {
+        color: #10b981;
+        border-bottom-color: #10b981;
+    }
+
+    .count-badge {
+        background: #e9ecef;
+        color: #495057;
+        padding: 0.2rem 0.6rem;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        margin-left: 0.5rem;
+    }
+
+    .requests-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .request-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        background: #f8fafd;
+        border-radius: 14px;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .request-item.pending {
+        border-left-color: #f59e0b;
+    }
+
+    .request-item.paid {
+        border-left-color: #10b981;
+    }
+
+    .request-item:hover {
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transform: translateX(5px);
+    }
+
+    .request-content {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+    }
+
+    .request-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .request-details {
+        flex: 1;
+    }
+
+    .request-title {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.3rem;
+    }
+
+    .request-meta {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .meta-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.75rem;
+        color: #64748b;
+        background: #f1f5f9;
+        padding: 0.2rem 0.6rem;
+        border-radius: 30px;
+    }
+
+    .request-status {
+        min-width: 120px;
+        text-align: right;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-badge.success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-badge.danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .empty-mini {
+        padding: 1rem;
+        background: #f8fafd;
+        border-radius: 12px;
+        color: #6c757d;
+        text-align: center;
+    }
+
+    /* Empty State */
+    .empty-state-card {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 30px;
+        box-shadow: 0 20px 40px -15px rgba(0,0,0,0.1);
+        max-width: 700px;
+        margin: 2rem auto;
+    }
+
+    .empty-state-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, var(--primary-light), #ffffff);
+        border-radius: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        color: var(--primary);
+        margin: 0 auto;
+        box-shadow: 0 20px 30px -10px rgba(46,91,255,0.2);
+    }
+
+    .search-tips {
+        background: #f8fafd;
+        border-radius: 20px;
+        padding: 1.5rem;
+        text-align: left;
+        margin-top: 2rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .tip-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 12px;
+    }
+
+    .tip-item i {
+        font-size: 1.2rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .gradient-text {
+            font-size: 1.5rem;
+        }
+
+        .search-input-group {
+            flex-direction: column;
+            border-radius: 12px;
+        }
+
+        .search-prefix {
+            width: 100%;
+            border-right: none;
+            border-bottom: 2px solid #e9ecef;
+            justify-content: center;
+        }
+
+        .search-btn {
+            width: 100%;
+            padding: 1rem;
+        }
+
+        .patient-meta {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .bill-detail-item {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .request-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .request-status {
+            width: 100%;
+            text-align: left;
+        }
+
+        .btn-payment {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+{% endblock %}

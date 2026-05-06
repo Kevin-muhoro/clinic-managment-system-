@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Payment History - {{ start_date|default:"All" }} to {{ end_date|default:"All" }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 11pt; margin: 20px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .clinic { font-size: 18pt; font-weight: bold; color: #2e5bff; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #2e5bff; color: white; }
+        .total { font-weight: bold; text-align: right; }
+        .footer { text-align: center; margin-top: 30px; font-size: 9pt; color: #777; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="clinic">{{ clinic_name|default:"clinic pro" }}</div>
+    <div>Payment History Report</div>
+    {% if start_date %}
+    <div>From: {{ start_date|date:"d M Y" }} — To: {{ end_date|date:"d M Y" }}</div>
+    {% else %}
+    <div>All Payments</div>
+    {% endif %}
+    <div>Generated: {{ today|date:"d M Y" }}</div>  <!-- No time here -->
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>  <!-- Date only -->
+            <th>Patient OP</th>
+            <th>Patient Name</th>
+            <th>Payment Mode</th>
+            <th>Amount (KES)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in payments %}
+        <tr>
+            <td>{{ p.paid_at|date:"d M Y" }}</td>  <!-- Fixed: date only -->
+            <td>{{ p.bill.patient.op_number }}</td>
+            <td>{{ p.bill.patient.full_name }}</td>
+            <td>{{ p.method }}</td>
+            <td class="text-end">{{ p.amount_paid|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="4" class="total">Total Collected:</td>
+            <td class="total">{{ total_amount|floatformat:2 }}</td>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="footer">
+    Thank you for choosing {{ clinic_name|default:"Our Clinic" }}<br>
+    Generated on {{ today|date:"d M Y" }}
+</div>
+
+</body>
+</html>

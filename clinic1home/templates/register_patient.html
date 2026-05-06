@@ -1,0 +1,814 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<style>
+    /* ─── PAGE HEADER ─────────────────────────────────── */
+    .page-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .page-title-group {}
+
+    .page-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.55rem;
+        font-weight: 800;
+        color: #0f1829;
+        letter-spacing: -0.5px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .page-title-icon {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, #1a3eb3, #2e5bff);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1.1rem;
+        box-shadow: 0 6px 16px -4px rgba(46,91,255,0.4);
+        flex-shrink: 0;
+    }
+
+    .page-subtitle {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin: 4px 0 0 54px;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        border: 1.5px solid rgba(46,91,255,0.22);
+        background: rgba(46,91,255,0.04);
+        color: #2e5bff;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.845rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.18s ease;
+    }
+
+    .btn-back:hover {
+        background: #2e5bff;
+        color: #fff;
+        border-color: #2e5bff;
+    }
+
+    /* ─── MAIN CARD ───────────────────────────────────── */
+    .form-card {
+        background: #fff;
+        border-radius: 20px;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .form-card-header {
+        background: linear-gradient(135deg, #0e245e 0%, #2e5bff 100%);
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-card-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+        background-size: 22px 22px;
+        pointer-events: none;
+    }
+
+    .form-card-header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        position: relative;
+    }
+
+    .card-header-icon {
+        width: 46px;
+        height: 46px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.2);
+        flex-shrink: 0;
+    }
+
+    .card-header-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+    }
+
+    .card-header-sub {
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.65);
+        margin-top: 2px;
+    }
+
+    .required-pill {
+        position: relative;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 50px;
+        padding: 0.35em 1em;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.9);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        letter-spacing: 0.3px;
+    }
+
+    .required-dot {
+        width: 6px;
+        height: 6px;
+        background: #fca5a5;
+        border-radius: 50%;
+    }
+
+    /* ─── FORM BODY ───────────────────────────────────── */
+    .form-body {
+        padding: 2.25rem 2rem;
+    }
+
+    /* ─── SECTION DIVIDERS ────────────────────────────── */
+    .form-section {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .form-section-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    .section-personal .form-section-icon { background: rgba(46,91,255,0.1); color: #2e5bff; }
+    .section-emergency .form-section-icon { background: rgba(239,68,68,0.1); color: #ef4444; }
+    .section-billing   .form-section-icon { background: rgba(16,185,129,0.1); color: #10b981; }
+
+    .form-section-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+    }
+
+    .section-personal .form-section-label { color: #2e5bff; }
+    .section-emergency .form-section-label { color: #ef4444; }
+    .section-billing   .form-section-label { color: #10b981; }
+
+    .form-section-line {
+        flex: 1;
+        height: 1px;
+        background: #e9eef5;
+    }
+
+    /* ─── FIELD STYLES ────────────────────────────────── */
+    .field-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        color: #334155;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .field-label .req { color: #ef4444; margin-left: 2px; }
+
+    .field-hint {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-top: 0.35rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .field-error-msg {
+        font-size: 0.78rem;
+        color: #ef4444;
+        margin-top: 0.35rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Input group override */
+    .modern-input-group {
+        border-radius: 11px;
+        overflow: hidden;
+        border: 1.5px solid #e2e8f0;
+        transition: border-color 0.18s, box-shadow 0.18s;
+        display: flex;
+        background: #fff;
+    }
+
+    .modern-input-group:focus-within {
+        border-color: #2e5bff;
+        box-shadow: 0 0 0 4px rgba(46,91,255,0.09);
+    }
+
+    .modern-input-group:hover:not(:focus-within) {
+        border-color: #94a3b8;
+    }
+
+    .modern-input-group .input-group-text {
+        background: #f8fafd;
+        border: none;
+        border-right: 1.5px solid #e9eef5;
+        color: #64748b;
+        font-size: 0.9rem;
+        padding: 0 1rem;
+        min-width: 42px;
+        justify-content: center;
+    }
+
+    .modern-input-group .form-control,
+    .modern-input-group select,
+    .modern-input-group input {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent;
+        padding: 0.78rem 1rem;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        color: #0f1829;
+        flex: 1;
+    }
+
+    /* ─── RADIO / TOGGLE GROUPS ───────────────────────── */
+    .modern-radio-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 4px;
+        background: #f1f5fb;
+        border-radius: 12px;
+        border: 1.5px solid #e2e8f0;
+        width: fit-content;
+        min-width: 100%;
+    }
+
+    /* Hide the actual radio input completely */
+    .modern-radio-group input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+    }
+
+    /* Style the label as the visible pill */
+    .modern-radio-group label {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0.55rem 1.25rem;
+        border-radius: 9px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        background: transparent;
+        flex: 1;
+        justify-content: center;
+        white-space: nowrap;
+        border: 1.5px solid transparent;
+        user-select: none;
+    }
+
+    .modern-radio-group label:hover {
+        color: #2e5bff;
+        background: rgba(46,91,255,0.06);
+    }
+
+    /* When the paired radio is checked, style the label */
+    .modern-radio-group input[type="radio"]:checked + label {
+        background: #fff;
+        color: #2e5bff;
+        border-color: rgba(46,91,255,0.2);
+        box-shadow: 0 2px 8px rgba(46,91,255,0.12);
+    }
+
+    /* Django wraps each radio+label in a div — handle that too */
+    .modern-radio-group > div {
+        display: contents;
+    }
+
+    /* ─── SUBMIT BUTTON ───────────────────────────────── */
+    .btn-submit {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 1rem 2.5rem;
+        border-radius: 13px;
+        border: none;
+        background: linear-gradient(135deg, #1a3eb3 0%, #2e5bff 100%);
+        color: #fff;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        cursor: pointer;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        box-shadow: 0 8px 24px -6px rgba(46,91,255,0.45);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.55s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px -8px rgba(46,91,255,0.5);
+    }
+
+    .btn-submit:hover::before { transform: translateX(100%); }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* ─── SECURITY FOOTER ─────────────────────────────── */
+    .form-security {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1.25rem;
+        flex-wrap: wrap;
+    }
+
+    .security-chip {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .security-chip i { font-size: 0.8rem; color: #10b981; }
+
+    /* ─── ALERTS ──────────────────────────────────────── */
+    .form-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 0.9rem 1.1rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .form-alert-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .form-alert-success { background: #d1fae5; color: #065f46; }
+    .form-alert-success .form-alert-icon { background: #10b981; color: #fff; }
+    .form-alert-danger  { background: #fee2e2; color: #991b1b; }
+    .form-alert-danger  .form-alert-icon { background: #ef4444; color: #fff; }
+
+    .form-alert-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.82rem;
+        margin-bottom: 1px;
+    }
+
+    /* ─── SECTION SEPARATOR ───────────────────────────── */
+    .section-gap { margin-top: 2.25rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ─── PAGE HEADER ─────────────────────────────────────── -->
+<div class="page-header">
+    <div class="page-title-group">
+        <h1 class="page-title">
+            <div class="page-title-icon"><i class="bi bi-person-plus-fill"></i></div>
+            Register New Patient
+        </h1>
+        <p class="page-subtitle">Fill in the form below to register a new patient into the system.</p>
+    </div>
+    <a href="{% url 'patient_list' %}" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Back to Patients
+    </a>
+</div>
+
+<!-- ─── FORM CARD ───────────────────────────────────────── -->
+<div class="form-card">
+
+    <!-- Card Header -->
+    <div class="form-card-header">
+        <div class="form-card-header-left">
+            <div class="card-header-icon"><i class="bi bi-hospital-fill"></i></div>
+            <div>
+                <div class="card-header-title">Patient Registration Form</div>
+                <div class="card-header-sub">Enter accurate details for the new patient</div>
+            </div>
+        </div>
+        <div class="required-pill">
+            <div class="required-dot"></div>
+            Required fields marked with *
+        </div>
+    </div>
+
+    <!-- Form Body -->
+    <div class="form-body">
+
+        <!-- Django Messages -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="form-alert {% if message.tags == 'success' %}form-alert-success{% else %}form-alert-danger{% endif %}">
+                <div class="form-alert-icon">
+                    <i class="bi {% if message.tags == 'success' %}bi-check-lg{% else %}bi-exclamation-lg{% endif %}"></i>
+                </div>
+                <div>
+                    <div class="form-alert-label">{% if message.tags == 'success' %}Success{% else %}Notice{% endif %}</div>
+                    <div>{{ message }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+
+            <!-- ══ PERSONAL INFORMATION ══════════════════ -->
+            <div class="form-section section-personal">
+                <div class="form-section-icon"><i class="bi bi-person-vcard"></i></div>
+                <span class="form-section-label">Personal Information</span>
+                <div class="form-section-line"></div>
+            </div>
+
+            <div class="row g-4">
+
+                <!-- Full Name -->
+                <div class="col-md-8">
+                    <label class="field-label">Full Name <span class="req">*</span></label>
+                    <div class="modern-input-group">
+                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                        {{ form.full_name }}
+                    </div>
+                    {% if form.full_name.errors %}
+                    <div class="field-error-msg"><i class="bi bi-exclamation-circle"></i> {{ form.full_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Gender -->
+                <div class="col-md-4">
+                    <label class="field-label">Gender <span class="req">*</span></label>
+                    <div class="modern-radio-group">{{ form.gender }}</div>
+                    {% if form.gender.errors %}
+                    <div class="field-error-msg"><i class="bi bi-exclamation-circle"></i> {{ form.gender.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Date of Birth -->
+                <div class="col-md-6">
+                    <label class="field-label">Date of Birth <span class="req">*</span></label>
+                    <div class="modern-input-group">
+                        <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                        {{ form.date_of_birth }}
+                    </div>
+                    {% if form.date_of_birth.errors %}
+                    <div class="field-error-msg"><i class="bi bi-exclamation-circle"></i> {{ form.date_of_birth.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Phone -->
+                <div class="col-md-6">
+                    <label class="field-label">Phone Number <span class="req">*</span></label>
+                    <div class="modern-input-group">
+                        <span class="input-group-text">+254</span>
+                        {{ form.phone }}
+                    </div>
+                    <div class="field-hint"><i class="bi bi-info-circle"></i> 9 digits starting with 7 (e.g. 712345678)</div>
+                    {% if form.phone.errors %}
+                    <div class="field-error-msg"><i class="bi bi-exclamation-circle"></i> {{ form.phone.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- ID Number -->
+                <div class="col-md-6" id="id-number-wrapper">
+                    <label class="field-label">ID Number <span class="req" id="id-number-required"></span></label>
+                    <div class="modern-input-group">
+                        <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                        {{ form.id_number }}
+                    </div>
+                    <div class="field-hint" id="id-number-hint"><i class="bi bi-info-circle"></i> Required for adults (18+). Leave blank for minors.</div>
+                    {% if form.id_number.errors %}
+                    <div class="field-error-msg"><i class="bi bi-exclamation-circle"></i> {{ form.id_number.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Address -->
+                <div class="col-md-6">
+                    <label class="field-label">Residence / Address <span class="req">*</span></label>
+                    <div class="modern-input-group">
+                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                        {{ form.address }}
+                    </div>
+                    {% if form.address.errors %}
+                    <div class="field-error-msg"><i class="bi bi-exclamation-circle"></i> {{ form.address.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- ══ EMERGENCY CONTACT ═════════════════════ -->
+            <div class="form-section section-emergency section-gap">
+                <div class="form-section-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <span class="form-section-label">Emergency Contact</span>
+                <div class="form-section-line"></div>
+            </div>
+
+            <div class="row g-4">
+
+                <!-- Next of Kin Name -->
+                <div class="col-md-6">
+                    <label class="field-label">Next of Kin Name <span class="req">*</span></label>
+                    <div class="modern-input-group">
+                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                        {{ form.next_of_kin_name }}
+                    </div>
+                    {% if form.next_of_kin_name.errors %}
+                    <div class="field-error-msg"><i class="bi bi-exclamation-circle"></i> {{ form.next_of_kin_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Next of Kin Phone -->
+                <div class="col-md-6">
+                    <label class="field-label">Next of Kin Phone</label>
+                    <div class="modern-input-group">
+                        <span class="input-group-text">+254</span>
+                        {{ form.next_of_kin_phone }}
+                    </div>
+                    <div class="field-hint"><i class="bi bi-info-circle"></i> Optional but recommended</div>
+                    {% if form.next_of_kin_phone.errors %}
+                    <div class="field-error-msg"><i class="bi bi-exclamation-circle"></i> {{ form.next_of_kin_phone.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- ══ BILLING INFORMATION ═══════════════════ -->
+            <div class="form-section section-billing section-gap">
+                <div class="form-section-icon"><i class="bi bi-credit-card-fill"></i></div>
+                <span class="form-section-label">Billing Information</span>
+                <div class="form-section-line"></div>
+            </div>
+
+            <div class="row g-4">
+
+                <!-- Patient Type -->
+                <div class="col-md-6">
+                    <label class="field-label">Patient Type</label>
+                    <div class="modern-radio-group">{{ form.patient_type }}</div>
+                    {% if form.patient_type.errors %}
+                    <div class="field-error-msg"><i class="bi bi-exclamation-circle"></i> {{ form.patient_type.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Payment Mode -->
+                <div class="col-md-6">
+                    <label class="field-label">Preferred Payment Mode</label>
+                    <div class="modern-radio-group">{{ form.payment_mode }}</div>
+                    {% if form.payment_mode.errors %}
+                    <div class="field-error-msg"><i class="bi bi-exclamation-circle"></i> {{ form.payment_mode.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- ══ SUBMIT ═════════════════════════════════ -->
+            <div class="text-center mt-5 pt-2">
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Register Patient
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+                <div class="form-security">
+                    <div class="security-chip"><i class="bi bi-shield-check"></i> SSL Encrypted</div>
+                    <div class="security-chip"><i class="bi bi-lock-fill"></i> Confidential</div>
+                    <div class="security-chip"><i class="bi bi-database-check"></i> Securely Stored</div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ── Radio group styling ──────────────────────────────────────
+    document.querySelectorAll('.modern-radio-group').forEach(function (group) {
+        // Get all radio inputs and their associated labels
+        const radios = group.querySelectorAll('input[type="radio"]');
+
+        // Find labels that are associated with these radios
+        const labels = [];
+        radios.forEach(function (radio) {
+            let label;
+            if (radio.id) {
+                label = document.querySelector(`label[for="${radio.id}"]`);
+            }
+            if (!label && radio.parentElement && radio.parentElement.tagName === 'LABEL') {
+                label = radio.parentElement;
+            }
+            labels.push(label);
+        });
+
+        function refresh() {
+            radios.forEach(function (radio, i) {
+                const label = labels[i];
+                if (!label) return;
+                if (radio.checked) {
+                    label.style.background = '#fff';
+                    label.style.color = '#2e5bff';
+                    label.style.borderColor = 'rgba(46,91,255,0.25)';
+                    label.style.boxShadow = '0 2px 8px rgba(46,91,255,0.13)';
+                } else {
+                    label.style.background = '';
+                    label.style.color = '';
+                    label.style.borderColor = '';
+                    label.style.boxShadow = '';
+                }
+            });
+        }
+
+        radios.forEach(function (radio) {
+            radio.addEventListener('change', refresh);
+        });
+        refresh();
+    });
+
+    // ── Phone: enforce max 9 digits, block non-numeric ───────────
+    const phoneInput = document.getElementById('{{ form.phone.id_for_label }}');
+    if (phoneInput) {
+        phoneInput.setAttribute('maxlength', '9');
+        phoneInput.setAttribute('inputmode', 'numeric');
+        phoneInput.setAttribute('pattern', '[0-9]{9}');
+
+        phoneInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 9);
+        });
+    }
+
+    // ── Next of Kin Phone: enforce max 9 digits, block non-numeric ───────────
+    const nokPhoneInput = document.getElementById('{{ form.next_of_kin_phone.id_for_label }}');
+    if (nokPhoneInput) {
+        nokPhoneInput.setAttribute('maxlength', '9');
+        nokPhoneInput.setAttribute('inputmode', 'numeric');
+        nokPhoneInput.setAttribute('pattern', '[0-9]{9}');
+
+        nokPhoneInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 9);
+        });
+    }
+
+    // ── ID Number: show/hide & require based on age ──────────────
+    const dobInput = document.getElementById('{{ form.date_of_birth.id_for_label }}');
+    const idField = document.getElementById('{{ form.id_number.id_for_label }}');
+    const idWrapper = document.getElementById('id-number-wrapper');
+    const idRequiredSpan = document.getElementById('id-number-required');
+    const idHintSpan = document.getElementById('id-number-hint');
+
+    function calcAge(dob) {
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+        return age;
+    }
+
+    function validateDateOfBirth() {
+        if (!dobInput || !dobInput.value) return true;
+
+        const dobValue = dobInput.value;
+        const dobDate = new Date(dobValue);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Check if date is in the future
+        if (dobDate >= today) {
+            dobInput.setCustomValidity("Date of birth cannot be today or in the future.");
+            dobInput.reportValidity();
+            dobInput.value = '';
+            return false;
+        }
+
+        dobInput.setCustomValidity('');
+        return true;
+    }
+
+    function updateIdField() {
+        if (!dobInput || !idField || !idWrapper) return;
+
+        const dobVal = dobInput.value;
+        if (!dobVal) {
+            // No DOB entered yet - show field but don't require
+            idWrapper.style.display = '';
+            idField.required = false;
+            if (idRequiredSpan) idRequiredSpan.textContent = '';
+            if (idHintSpan) idHintSpan.innerHTML = '<i class="bi bi-info-circle"></i> Enter ID number (required for patients 18+)';
+            return;
+        }
+
+        const age = calcAge(new Date(dobVal));
+
+        if (age >= 18) {
+            // Adult: show field, mark required
+            idWrapper.style.display = '';
+            idField.required = true;
+            if (idRequiredSpan) idRequiredSpan.textContent = '*';
+            if (idHintSpan) idHintSpan.innerHTML = '<i class="bi bi-info-circle"></i> Required — patient is 18 or older.';
+        } else if (age >= 0) {
+            // Minor: hide field, clear value & remove required
+            idWrapper.style.display = 'none';
+            idField.required = false;
+            idField.value = '';
+            if (idRequiredSpan) idRequiredSpan.textContent = '';
+        } else {
+            // Invalid date
+            idWrapper.style.display = '';
+            idField.required = false;
+            if (idRequiredSpan) idRequiredSpan.textContent = '';
+            if (idHintSpan) idHintSpan.innerHTML = '<i class="bi bi-info-circle"></i> Please enter a valid date of birth.';
+        }
+    }
+
+    if (dobInput) {
+        dobInput.addEventListener('change', function() {
+            if (validateDateOfBirth()) {
+                updateIdField();
+            }
+        });
+        dobInput.addEventListener('input', validateDateOfBirth);
+        // Run on page load in case DOB is pre-filled (edit mode)
+        updateIdField();
+    }
+</script>
+{% endblock %}

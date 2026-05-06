@@ -1,0 +1,477 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+  :root {
+    --ink: #0d1117;
+    --ink-soft: #3a3f4b;
+    --ink-muted: #7c8494;
+    --surface: #f5f6f8;
+    --card: #ffffff;
+    --border: #e4e7ed;
+    --accent: #1a6ef5;
+    --accent-soft: #e8f0fe;
+    --accent-glow: rgba(26,110,245,0.12);
+    --green: #12b76a;
+    --green-soft: #e6f7f0;
+    --amber: #f79009;
+    --amber-soft: #fef3e2;
+    --red: #f04438;
+    --red-soft: #fef0ee;
+    --teal: #0e9488;
+    --teal-soft: #e0f2f0;
+    --shadow-sm: 0 1px 3px rgba(13,17,23,0.06), 0 1px 2px rgba(13,17,23,0.04);
+    --shadow-md: 0 4px 16px rgba(13,17,23,0.08), 0 2px 6px rgba(13,17,23,0.04);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--surface); font-family: 'DM Sans', sans-serif; color: var(--ink); }
+
+  .pd-wrapper {
+    padding: 2.5rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .pd-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .pd-eyebrow {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.35rem;
+  }
+  .pd-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin: 0 0 0.25rem;
+    line-height: 1.15;
+  }
+  .pd-sub {
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+    font-weight: 300;
+  }
+  .header-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 1.1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .btn-back:hover { border-color: var(--ink-soft); background: var(--surface); color: var(--ink); }
+
+  .btn-edit-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: var(--amber-soft);
+    color: var(--amber);
+    border: 1.5px solid rgba(247,144,9,0.2);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 1.1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .btn-edit-header:hover {
+    background: var(--amber);
+    color: #fff;
+    border-color: var(--amber);
+    box-shadow: 0 4px 14px rgba(247,144,9,0.25);
+    transform: translateY(-1px);
+  }
+
+  /* ── Hero Banner ── */
+  .patient-hero {
+    background: var(--ink);
+    border-radius: var(--radius);
+    padding: 2rem 2.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.45s ease both;
+  }
+  .patient-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,110,245,0.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .patient-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 30%;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(18,183,106,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #5b8ff9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    border: 3px solid rgba(255,255,255,0.15);
+    position: relative;
+    z-index: 1;
+  }
+  .hero-info { position: relative; z-index: 1; flex: 1; min-width: 0; }
+  .hero-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+  }
+  .hero-op {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(26,110,245,0.25);
+    color: #7fb3ff;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 0.28rem 0.65rem;
+    border-radius: 6px;
+    border: 1px solid rgba(26,110,245,0.3);
+  }
+  .hero-meta {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .hero-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.55);
+    font-weight: 300;
+  }
+  .hero-meta-item i { font-size: 0.75rem; }
+
+  .hero-badge-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.04em;
+  }
+  .status-active { background: rgba(18,183,106,0.2); color: #4dd899; border: 1px solid rgba(18,183,106,0.25); }
+  .status-active::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
+
+  /* ── Detail Grid ── */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  @media (max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } }
+
+  .detail-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+  .detail-section:nth-child(1) { animation-delay: 0.05s; }
+  .detail-section:nth-child(2) { animation-delay: 0.1s; }
+  .detail-section.full-width {
+    grid-column: 1 / -1;
+    animation-delay: 0.15s;
+  }
+
+  .section-head {
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--surface);
+  }
+  .section-head-icon {
+    width: 30px; height: 30px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .section-head-icon.blue  { background: var(--accent-soft); color: var(--accent); }
+  .section-head-icon.red   { background: var(--red-soft); color: var(--red); }
+  .section-head-icon.teal  { background: var(--teal-soft); color: var(--teal); }
+
+  .section-head-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .detail-rows { padding: 0.25rem 0; }
+
+  .detail-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.8rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    gap: 1rem;
+  }
+  .detail-row:last-child { border-bottom: none; }
+
+  .detail-key {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    min-width: 130px;
+    flex-shrink: 0;
+    padding-top: 0.05rem;
+  }
+  .detail-val {
+    font-size: 0.9rem;
+    color: var(--ink);
+    font-weight: 400;
+    flex: 1;
+    word-break: break-word;
+  }
+  .detail-val.muted { color: var(--ink-muted); font-weight: 300; font-style: italic; }
+  .detail-val a {
+    color: var(--accent);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .detail-val a:hover { text-decoration: underline; }
+
+  .inline-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    padding: 0.22rem 0.6rem;
+    border-radius: 5px;
+  }
+  .badge-green { background: var(--green-soft); color: var(--green); }
+  .badge-blue  { background: var(--accent-soft); color: var(--accent); }
+  .badge-amber { background: var(--amber-soft); color: var(--amber); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    .pd-wrapper { padding: 1.25rem 1rem; }
+    .pd-title { font-size: 1.4rem; }
+    .patient-hero { padding: 1.4rem 1.25rem; gap: 1rem; }
+    .detail-key { min-width: 100px; }
+  }
+</style>
+
+<div class="pd-wrapper">
+
+  <!-- Header -->
+  <div class="pd-header">
+    <div>
+      <div class="pd-eyebrow">Patient Record</div>
+      <h1 class="pd-title">{{ patient.full_name }}</h1>
+      <p class="pd-sub">Viewing full profile for outpatient {{ patient.op_number }}</p>
+    </div>
+    <div class="header-actions">
+      <a href="{% url 'patient_list' %}" class="btn-back">
+        <i class="bi bi-arrow-left"></i> Back to List
+      </a>
+      <a href="{% url 'patient_edit' patient.op_number %}" class="btn-edit-header">
+        <i class="bi bi-pencil"></i> Edit Patient
+      </a>
+    </div>
+  </div>
+
+  <!-- Hero Banner -->
+  <div class="patient-hero">
+    <div class="hero-avatar">{{ patient.full_name|slice:":2"|upper }}</div>
+    <div class="hero-info">
+      <div class="hero-name">{{ patient.full_name }}</div>
+      <div class="hero-op"><i class="bi bi-hash"></i>{{ patient.op_number }}</div>
+      <div class="hero-meta">
+        <span class="hero-meta-item"><i class="bi bi-telephone"></i> {{ patient.phone }}</span>
+        <span class="hero-meta-item"><i class="bi bi-calendar3"></i> Registered {{ patient.registered_on|date:"d M Y" }}</span>
+        {% if patient.address %}
+        <span class="hero-meta-item"><i class="bi bi-geo-alt"></i> {{ patient.address }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="hero-badge-group">
+      <span class="status-badge status-active">Active Patient</span>
+    </div>
+  </div>
+
+  <!-- Detail Grid -->
+  <div class="detail-grid">
+
+    <!-- Personal Info -->
+    <div class="detail-section">
+      <div class="section-head">
+        <div class="section-head-icon blue"><i class="bi bi-person-vcard"></i></div>
+        <span class="section-head-title">Personal Information</span>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="detail-key">Full Name</span>
+          <span class="detail-val">{{ patient.full_name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Date of Birth</span>
+          <span class="detail-val">{{ patient.date_of_birth|date:"d M Y"|default:"—" }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Gender</span>
+          <span class="detail-val">{{ patient.get_gender_display|default:"—" }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">ID Number</span>
+          <span class="detail-val {% if not patient.id_number %}muted{% endif %}">
+            {{ patient.id_number|default:"Not provided (minor / exempt)" }}
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Phone</span>
+          <span class="detail-val">
+            <a href="tel:{{ patient.phone }}"><i class="bi bi-telephone"></i>+254 {{ patient.phone }}</a>
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Address</span>
+          <span class="detail-val">{{ patient.address|default:"—" }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emergency Contact -->
+    <div class="detail-section">
+      <div class="section-head">
+        <div class="section-head-icon red"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <span class="section-head-title">Emergency Contact</span>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="detail-key">Next of Kin</span>
+          <span class="detail-val">{{ patient.next_of_kin_name|default:"—" }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Kin Phone</span>
+          <span class="detail-val {% if not patient.next_of_kin_phone %}muted{% endif %}">
+            {% if patient.next_of_kin_phone %}
+              <a href="tel:{{ patient.next_of_kin_phone }}"><i class="bi bi-telephone"></i>+254 {{ patient.next_of_kin_phone }}</a>
+            {% else %}Not provided{% endif %}
+          </span>
+        </div>
+      </div>
+
+      <!-- Billing Info in same column -->
+      <div class="section-head" style="margin-top: 0; border-top: 1px solid var(--border);">
+        <div class="section-head-icon teal"><i class="bi bi-credit-card-fill"></i></div>
+        <span class="section-head-title">Billing Information</span>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="detail-key">Patient Type</span>
+          <span class="detail-val">
+            <span class="inline-badge badge-blue">{{ patient.get_patient_type_display|default:"Outpatient" }}</span>
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Payment Mode</span>
+          <span class="detail-val">
+            <span class="inline-badge badge-green">{{ patient.get_payment_mode_display|default:"—" }}</span>
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Registered On</span>
+          <span class="detail-val">{{ patient.registered_on|date:"d M Y, H:i" }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

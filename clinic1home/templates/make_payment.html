@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+  :root {
+    --ink: #0d1117; --ink-soft: #3a3f4b; --ink-muted: #7c8494;
+    --surface: #f5f6f8; --card: #ffffff; --border: #e4e7ed;
+    --accent: #1a6ef5; --accent-soft: #e8f0fe; --accent-glow: rgba(26,110,245,0.12);
+    --green: #12b76a; --green-soft: #e6f7f0;
+    --amber: #f79009; --amber-soft: #fef3e2;
+    --red: #f04438; --red-soft: #fef0ee;
+    --teal: #0e9488; --teal-soft: #e0f2f0;
+    --shadow-sm: 0 1px 3px rgba(13,17,23,0.06);
+    --shadow-md: 0 4px 20px rgba(13,17,23,0.09);
+    --radius: 14px; --radius-sm: 8px;
+  }
+
+  .mp { box-sizing: border-box; padding: 2.5rem 2rem; max-width: 740px; margin: 0 auto; font-family: 'DM Sans', sans-serif; color: var(--ink); }
+  .mp *, .mp *::before, .mp *::after { box-sizing: border-box; }
+
+  /* Header */
+  .mp-eyebrow { font-family: 'Syne', sans-serif; font-size: .66rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--teal); margin: 0 0 .3rem; }
+  .mp-title   { font-family: 'Syne', sans-serif; font-size: 1.85rem; font-weight: 800; color: var(--ink); margin: 0 0 .2rem; line-height: 1.15; }
+  .mp-sub     { font-size: .88rem; color: var(--ink-muted); font-weight: 300; margin: 0 0 1.75rem; }
+
+  /* Bill summary strip */
+  .mp-summary {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .mp-sum-cell { background: var(--card); padding: 1rem 1.25rem; text-align: center; }
+  .mp-sum-label { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); margin-bottom: .3rem; }
+  .mp-sum-val   { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--ink); }
+  .mp-sum-val.green { color: var(--green); }
+  .mp-sum-val.red   { color: var(--red); }
+
+  /* Full-payment notice */
+  .mp-notice {
+    display: flex; align-items: flex-start; gap: .75rem;
+    background: var(--amber-soft); border: 1px solid rgba(247,144,9,.22);
+    border-radius: var(--radius-sm); padding: .9rem 1rem; margin-bottom: 1.5rem;
+  }
+  .mp-notice-icon { width: 30px; height: 30px; border-radius: 7px; background: rgba(247,144,9,.18); display: flex; align-items: center; justify-content: center; font-size: .9rem; color: var(--amber); flex-shrink: 0; }
+  .mp-notice-text { font-size: .84rem; color: var(--ink-soft); line-height: 1.55; margin: 0; }
+  .mp-notice-text strong { color: var(--amber); font-weight: 600; }
+
+  /* Form card */
+  .mp-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-md); overflow: hidden; }
+
+  .mp-card-head { background: linear-gradient(135deg, #0d1117, #1a1f2e); padding: 1.3rem 1.6rem; display: flex; align-items: center; gap: .9rem; position: relative; overflow: hidden; }
+  .mp-card-head::before { content: ''; position: absolute; top: -40px; right: -40px; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(14,148,136,.18) 0%, transparent 70%); pointer-events: none; }
+  .mp-card-icon { width: 42px; height: 42px; border-radius: 10px; background: rgba(14,148,136,.18); border: 1px solid rgba(14,148,136,.28); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; color: #5eead4; flex-shrink: 0; position: relative; z-index: 1; }
+  .mp-card-title { font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700; color: #fff; margin: 0; position: relative; z-index: 1; }
+  .mp-card-sub   { font-size: .78rem; color: rgba(255,255,255,.42); font-weight: 300; margin: .1rem 0 0; position: relative; z-index: 1; }
+
+  .mp-body { padding: 1.6rem; display: flex; flex-direction: column; gap: 1.2rem; }
+
+  /* Field */
+  .mp-f   { display: flex; flex-direction: column; gap: .38rem; }
+  .mp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem 1.4rem; }
+  .mp-lbl { display: block; font-size: .73rem; font-weight: 600; color: var(--ink-soft); letter-spacing: .05em; text-transform: uppercase; line-height: 1; margin: 0; }
+  .mp-req { color: var(--red); }
+
+  /* Bootstrap-proof input wrapper */
+  .mp-iw { display: table; width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: #fff; overflow: hidden; transition: border-color .2s, box-shadow .2s; }
+  .mp-iw:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .mp-pfx { display: table-cell; width: 1%; white-space: nowrap; padding: 0 .78rem; background: var(--surface); border-right: 1.5px solid var(--border); color: var(--ink-muted); font-size: .82rem; vertical-align: middle; }
+  .mp-iw input, .mp-iw select {
+    all: unset !important; display: table-cell !important; width: 100% !important;
+    padding: .64rem .85rem !important; font-family: 'DM Sans', sans-serif !important;
+    font-size: .88rem !important; color: var(--ink) !important; background: transparent !important;
+    border: none !important; outline: none !important; box-shadow: none !important;
+    line-height: 1.45 !important; -webkit-appearance: auto !important; appearance: auto !important;
+    box-sizing: border-box !important; vertical-align: middle !important;
+  }
+  .mp-iw select { cursor: pointer !important; }
+
+  .mp-hint { font-size: .73rem; color: var(--ink-muted); font-weight: 300; display: flex; align-items: center; gap: .28rem; margin: 0; }
+  .mp-ferr { font-size: .73rem; color: var(--red); display: flex; align-items: center; gap: .28rem; margin: 0; }
+
+  /* Conditional sections */
+  .mp-scheme-fields, .mp-mpesa-fields, .mp-cash-note { display: none; }
+
+  .mp-cash-note {
+    background: var(--green-soft); border: 1px solid rgba(18,183,106,.2);
+    border-radius: var(--radius-sm); padding: .75rem 1rem;
+    font-size: .84rem; color: #0a6640;
+    align-items: center; gap: .5rem;
+  }
+
+  /* Footer */
+  .mp-foot { padding: 1.25rem 1.6rem; border-top: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; align-items: center; gap: .65rem; }
+  .mp-submit {
+    all: unset; display: inline-flex; align-items: center; gap: .55rem;
+    background: var(--teal); color: #fff; font-family: 'Syne', sans-serif;
+    font-size: .88rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    padding: .85rem 2.6rem; border-radius: var(--radius-sm); cursor: pointer;
+    transition: background .2s, transform .15s, box-shadow .2s;
+    box-shadow: 0 2px 8px rgba(14,148,136,.25); line-height: 1;
+  }
+  .mp-submit:hover { background: #0c7a6e; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(14,148,136,.3); }
+  .mp-chips { display: flex; align-items: center; gap: .9rem; }
+  .mp-chip  { display: inline-flex; align-items: center; gap: .28rem; font-size: .7rem; color: var(--ink-muted); }
+  .mp-chip i { color: var(--green); }
+
+  @media (max-width: 600px) {
+    .mp { padding: 1rem .85rem; }
+    .mp-summary { grid-template-columns: 1fr; }
+    .mp-row { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="mp">
+  <p class="mp-eyebrow">Billing</p>
+  <h1 class="mp-title">Make Payment</h1>
+  <p class="mp-sub">Bill {{ bill.bill_number }} &nbsp;·&nbsp; {{ bill.patient.full_name }}</p>
+
+  <!-- Bill summary -->
+  <div class="mp-summary">
+    <div class="mp-sum-cell">
+      <div class="mp-sum-label">Total Amount</div>
+      <div class="mp-sum-val">KES {{ bill.total_amount|floatformat:2 }}</div>
+    </div>
+    <div class="mp-sum-cell">
+      <div class="mp-sum-label">Amount Paid</div>
+      <div class="mp-sum-val green">KES {{ bill.paid_amount|floatformat:2 }}</div>
+    </div>
+    <div class="mp-sum-cell">
+      <div class="mp-sum-label">Balance Due</div>
+      <div class="mp-sum-val red">KES {{ bill.balance|floatformat:2 }}</div>
+    </div>
+  </div>
+
+  <!-- Full payment notice -->
+  <div class="mp-notice">
+    <div class="mp-notice-icon"><i class="bi bi-info-circle-fill"></i></div>
+    <p class="mp-notice-text">
+      <strong>Full payment required for Cash &amp; M-Pesa.</strong>
+      The system does not allow partial payments for these methods.
+      Insurance / SHA payments may be settled with a claim reference.
+    </p>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div style="display:flex;align-items:flex-start;gap:.7rem;padding:.85rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.87rem;background:{% if message.tags == 'success' %}var(--green-soft){% else %}var(--red-soft){% endif %};border:1px solid {% if message.tags == 'success' %}rgba(18,183,106,.25){% else %}rgba(240,68,56,.25){% endif %};color:{% if message.tags == 'success' %}#0a6640{% else %}#b01c1c{% endif %}">
+        <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %}"></i>
+        <span>{{ message }}</span>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Form card -->
+  <div class="mp-card">
+    <div class="mp-card-head">
+      <div class="mp-card-icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
+      <div>
+        <p class="mp-card-title">Payment Details</p>
+        <p class="mp-card-sub">Complete all required fields below</p>
+      </div>
+    </div>
+
+    <div class="mp-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Editable fees -->
+        <div class="mp-row">
+          <div class="mp-f">
+            <label class="mp-lbl">Registration Fee (KES)</label>
+            <div class="mp-iw">
+              <span class="mp-pfx"><i class="bi bi-receipt"></i></span>
+              <input type="number" name="registration_fee" value="{{ bill.registration_fee }}" step="0.01" min="0">
+            </div>
+          </div>
+          <div class="mp-f">
+            <label class="mp-lbl">Consultation Fee (KES)</label>
+            <div class="mp-iw">
+              <span class="mp-pfx"><i class="bi bi-person-badge"></i></span>
+              <input type="number" name="consultation_fee" value="{{ bill.consultation_fee }}" step="0.01" min="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- Amount to pay — pre-filled with full balance -->
+        <div class="mp-f">
+          <label class="mp-lbl">Amount to Pay (KES) <span class="mp-req">*</span></label>
+          <div class="mp-iw">
+            <span class="mp-pfx">KES</span>
+            <input type="number" name="amount_paid" id="id_amount_paid"
+                   value="{{ bill.balance|floatformat:2 }}"
+                   step="0.01" min="0"
+                   placeholder="{{ bill.balance|floatformat:2 }}">
+          </div>
+          <p class="mp-hint"><i class="bi bi-info-circle"></i> Pre-filled with the full balance due</p>
+          {% if form.amount_paid.errors %}
+            <p class="mp-ferr"><i class="bi bi-exclamation-circle"></i> {{ form.amount_paid.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Payment method -->
+        <div class="mp-f">
+          <label class="mp-lbl">Payment Method <span class="mp-req">*</span></label>
+          <div class="mp-iw">
+            {{ form.method }}
+          </div>
+          {% if form.method.errors %}
+            <p class="mp-ferr"><i class="bi bi-exclamation-circle"></i> {{ form.method.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- M-Pesa fields (shown when MPESA selected) -->
+        <div class="mp-mpesa-fields mp-f">
+          <label class="mp-lbl">M-Pesa Transaction Code <span class="mp-req">*</span></label>
+          <div class="mp-iw">
+            <span class="mp-pfx"><i class="bi bi-phone"></i></span>
+            {{ form.transaction_ref }}
+          </div>
+          <p class="mp-hint"><i class="bi bi-info-circle"></i> e.g. QEX3K8Y2T1</p>
+          {% if form.transaction_ref.errors %}
+            <p class="mp-ferr"><i class="bi bi-exclamation-circle"></i> {{ form.transaction_ref.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Insurance / SHA fields (shown when INSURANCE selected) -->
+        <div class="mp-scheme-fields mp-f">
+          <label class="mp-lbl">CR / Claim Reference Number</label>
+          <div class="mp-iw">
+            <span class="mp-pfx"><i class="bi bi-shield-check"></i></span>
+            {{ form.scheme_number }}
+          </div>
+          {% if form.scheme_number.errors %}
+            <p class="mp-ferr"><i class="bi bi-exclamation-circle"></i> {{ form.scheme_number.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Cash note -->
+        <div class="mp-cash-note">
+          <i class="bi bi-cash-stack"></i>
+          Cash payment — full balance must be settled in one transaction.
+        </div>
+
+        <div class="mp-foot" style="border:none;background:none;padding:0;">
+          <button type="submit" class="mp-submit">
+            <i class="bi bi-check-circle-fill"></i>
+            Complete Payment
+            <i class="bi bi-arrow-right"></i>
+          </button>
+          <div class="mp-chips">
+            <span class="mp-chip"><i class="bi bi-shield-check"></i> Securely recorded</span>
+            <span class="mp-chip"><i class="bi bi-lock-fill"></i> Confidential</span>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const methodSel    = document.getElementById('id_method') || document.querySelector('[name="method"]');
+  const mpesaFields  = document.querySelector('.mp-mpesa-fields');
+  const schemeFields = document.querySelector('.mp-scheme-fields');
+  const cashNote     = document.querySelector('.mp-cash-note');
+  const amountInput  = document.getElementById('id_amount_paid');
+  const fullBalance  = {{ bill.balance|floatformat:2 }};
+
+  function toggle() {
+    const m = methodSel.value;
+    mpesaFields.style.display  = m === 'MPESA'     ? 'flex' : 'none';
+    schemeFields.style.display = m === 'INSURANCE' ? 'flex' : 'none';
+    cashNote.style.display     = m === 'CASH'      ? 'flex' : 'none';
+
+    // For CASH and MPESA: lock amount to full balance
+    if (m === 'CASH' || m === 'MPESA') {
+      amountInput.value    = fullBalance.toFixed(2);
+      amountInput.readOnly = true;
+      amountInput.style.background = 'var(--surface)';
+      amountInput.style.color      = 'var(--ink-muted)';
+    } else {
+      amountInput.readOnly = false;
+      amountInput.style.background = '';
+      amountInput.style.color      = '';
+    }
+  }
+
+  if (methodSel) {
+    methodSel.addEventListener('change', toggle);
+    toggle();
+  }
+});
+</script>
+
+{% endblock %}

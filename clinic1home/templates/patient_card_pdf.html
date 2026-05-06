@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Patient Card - {{ patient.op_number }}</title>
+    <style>
+        /* PDF-safe but professional styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background: #ffffff;
+            margin: 0;
+            padding: 0;
+            color: #2c3e50;
+            font-size: 11pt;
+            line-height: 1.5;
+        }
+
+        /* Main container */
+        .pdf-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+        }
+
+        /* Header with solid colors */
+        .pdf-header {
+            background: #1a237e;
+            color: white;
+            padding: 30px 30px 20px 30px;
+            border-bottom: 5px solid #0d47a1;
+        }
+
+        .hospital-name {
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .hospital-subtitle {
+            font-size: 12px;
+            color: #90a4ae;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Patient ID Badge */
+        .id-badge {
+            background: #0d47a1;
+            padding: 12px 25px;
+            border-radius: 50px;
+            display: inline-block;
+            margin: 15px 0;
+            border: 2px solid #ffc107;
+        }
+
+        .id-label {
+            font-size: 10px;
+            color: #ffc107;
+            text-transform: uppercase;
+            display: block;
+        }
+
+        .id-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            letter-spacing: 2px;
+        }
+
+        /* Patient Name Section */
+        .patient-name-section {
+            margin: 20px 0;
+        }
+
+        .patient-name {
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .patient-title {
+            font-size: 16px;
+            color: #ffc107;
+            font-weight: normal;
+        }
+
+        /* Quick Info Grid */
+        .quick-info-grid {
+            background: #f5f5f5;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .quick-info-row {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .quick-info-cell {
+            display: table-cell;
+            padding: 15px;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .quick-info-cell:last-child {
+            border-right: none;
+        }
+
+        .info-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin: 30px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            background: #1a237e;
+            color: white;
+            padding: 12px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            border-left: 5px solid #ffc107;
+        }
+
+        /* Info Table */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .info-table tr {
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .info-table td {
+            padding: 12px 15px;
+        }
+
+        .info-table td:first-child {
+            width: 200px;
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #495057;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .info-table td:last-child {
+            background: white;
+            color: #212529;
+        }
+
+        /* Badges */
+        .badge-primary, .badge-success {
+            display: inline-block;
+            padding: 5px 15px;
+            font-weight: bold;
+            font-size: 11px;
+            border-radius: 30px;
+            text-transform: uppercase;
+        }
+
+        .badge-primary {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #1976d2;
+        }
+
+        .badge-success {
+            background: #e8f5e9;
+            color: #388e3c;
+            border: 1px solid #388e3c;
+        }
+
+        /* Notes Cards */
+        .note-card {
+            border: 1px solid #e0e0e0;
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+            background: white;
+        }
+
+        .note-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 2px solid #1a237e;
+            display: table;
+            width: 100%;
+        }
+
+        .note-date {
+            display: table-cell;
+            font-weight: bold;
+            color: #1a237e;
+            font-size: 13px;
+        }
+
+        .note-doctor {
+            display: table-cell;
+            text-align: right;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .note-body {
+            padding: 20px;
+        }
+
+        .note-field {
+            margin-bottom: 20px;
+        }
+
+        .note-field:last-child {
+            margin-bottom: 0;
+        }
+
+        .field-title {
+            font-weight: bold;
+            color: #1a237e;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            border-left: 4px solid #ffc107;
+            padding-left: 10px;
+        }
+
+        .field-content {
+            padding-left: 20px;
+            color: #2c3e50;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        /* Emergency Contact Highlight */
+        .emergency-box {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .emergency-title {
+            color: #e65100;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        /* Footer */
+        .pdf-footer {
+            background: #1a237e;
+            color: white;
+            padding: 20px 30px;
+            margin-top: 30px;
+            font-size: 10px;
+            display: table;
+            width: 100%;
+        }
+
+        .footer-left {
+            display: table-cell;
+            text-align: left;
+        }
+
+        .footer-right {
+            display: table-cell;
+            text-align: right;
+            color: #ffc107;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            color: #6c757d;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* Page Break */
+        .page-break {
+            page-break-before: always;
+        }
+
+        /* Print optimization */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .badge-primary, .badge-success {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .emergency-box {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="pdf-container">
+    <!-- HEADER SECTION -->
+    <div class="pdf-header">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="width: 70%;">
+                    <div class="hospital-name">HOSPITALPRO</div>
+                    <div class="hospital-subtitle">Excellence in Patient Care</div>
+                </td>
+                <td style="text-align: right;">
+                    <div class="id-badge">
+                        <span class="id-label">Patient Identification</span>
+                        <span class="id-number">{{ patient.op_number }}</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="patient-name-section">
+            <div class="patient-name">{{ patient.full_name|upper }}</div>
+            <div class="patient-title">MEDICAL RECORD • CONFIDENTIAL</div>
+        </div>
+    </div>
+
+    <!-- QUICK INFO GRID -->
+    <div class="quick-info-grid">
+        <div class="quick-info-row">
+            <div class="quick-info-cell">
+                <div class="info-label">Phone Number</div>
+                <div class="info-value">{{ patient.phone }}</div>
+            </div>
+            <div class="quick-info-cell">
+                <div class="info-label">Registered On</div>
+                <div class="info-value">{{ patient.registered_on|date:"d M Y" }}</div>
+            </div>
+            <div class="quick-info-cell">
+                <div class="info-label">Patient Type</div>
+                <div class="info-value">{{ patient.get_patient_type_display }}</div>
+            </div>
+            <div class="quick-info-cell">
+                <div class="info-label">Payment Mode</div>
+                <div class="info-value">{{ patient.get_payment_mode_display }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="content-section">
+        <!-- REGISTRATION DETAILS -->
+        <div class="section-title">📋 REGISTRATION DETAILS</div>
+
+        <table class="info-table">
+            <tr><td>OP Number</td><td><strong>{{ patient.op_number }}</strong></td></tr>
+            <tr><td>Full Name</td><td>{{ patient.full_name }}</td></tr>
+            <tr><td>Phone Number</td><td>{{ patient.phone }}</td></tr>
+            <tr><td>ID Number / Passport</td><td>{{ patient.id_number }}</td></tr>
+            <tr><td>Gender</td><td>{{ patient.get_gender_display }}</td></tr>
+            <tr><td>Date of Birth</td><td>{{ patient.date_of_birth|date:"d F Y" }}</td></tr>
+            <tr><td>Age</td><td><strong>{{ patient.age|default:"-" }} Years</strong></td></tr>
+            <tr><td>Residence / Address</td><td>{{ patient.address }}</td></tr>
+            <tr><td>Patient Type</td><td><span class="badge-primary">{{ patient.get_patient_type_display }}</span></td></tr>
+            <tr><td>Payment Mode</td><td><span class="badge-success">{{ patient.get_payment_mode_display }}</span></td></tr>
+        </table>
+
+        <!-- EMERGENCY CONTACT HIGHLIGHT -->
+        <div class="emergency-box">
+            <div class="emergency-title">🚨 EMERGENCY CONTACT</div>
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 50%;"><strong>Next of Kin:</strong> {{ patient.next_of_kin_name }}</td>
+                    <td><strong>Contact:</strong> {{ patient.next_of_kin_phone|default:"Not provided" }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- CLERKING HISTORY -->
+        {% if notes %}
+        <div class="section-title" style="margin-top: 30px;">📚 CLERKING HISTORY</div>
+
+        {% for note in notes %}
+        <div class="note-card">
+            <div class="note-header">
+                <div class="note-date">{{ note.clerked_on|date:"d F Y - h:i A" }}</div>
+                <div class="note-doctor">Attending: Dr. {{ note.doctor }}</div>
+            </div>
+
+            <div class="note-body">
+                <!-- Chief Complaint -->
+                <div class="note-field">
+                    <div class="field-title">CHIEF COMPLAINT</div>
+                    <div class="field-content">{{ note.chief_complaint|linebreaksbr }}</div>
+                </div>
+
+                {% if note.history %}
+                <div class="note-field">
+                    <div class="field-title">HISTORY OF PRESENT ILLNESS</div>
+                    <div class="field-content">{{ note.history|linebreaksbr }}</div>
+                </div>
+                {% endif %}
+
+                {% if note.examination %}
+                <div class="note-field">
+                    <div class="field-title">EXAMINATION FINDINGS</div>
+                    <div class="field-content">{{ note.examination|linebreaksbr }}</div>
+                </div>
+                {% endif %}
+
+                {% if note.diagnosis %}
+                <div class="note-field">
+                    <div class="field-title">DIAGNOSIS & MANAGEMENT PLAN</div>
+                    <div class="field-content">{{ note.diagnosis|linebreaksbr }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h3>No Clerking Notes Available</h3>
+            <p>This patient has no clinical consultation records yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- FOOTER -->
+    <div class="pdf-footer">
+        <div class="footer-left">
+            <strong>HospitalPro</strong> • Document generated on {{ current_date|date:"d F Y" }}
+        </div>
+        <div class="footer-right">
+            Page 1 of 1 • CONFIDENTIAL
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

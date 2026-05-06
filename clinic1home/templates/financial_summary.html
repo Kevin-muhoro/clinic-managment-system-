@@ -1,0 +1,708 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+        <div class="page-header-icon mx-auto mb-4">
+            <i class="bi bi-graph-up-arrow"></i>
+        </div>
+        <h2 class="page-title gradient-text mb-2">
+            Clinic Financial Summary
+        </h2>
+        <p class="text-muted fs-5">Revenue overview for the last 30 days</p>
+        <div class="date-badge">
+            <i class="bi bi-calendar3 me-2"></i>
+            {{ daily_data.0.day|date:"d M Y"|default:"Today" }} - {{ daily_data.29.day|date:"d M Y"|default:"Last 30 Days" }}
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row g-4 mb-5">
+        <!-- Drugs Revenue -->
+        <div class="col-md-3">
+            <div class="card kpi-card drugs-card">
+                <div class="card-body">
+                    <div class="kpi-icon-wrapper drugs">
+                        <i class="bi bi-capsule-pill"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Drugs Revenue</span>
+                        <span class="kpi-value">KES {{ total_drugs|floatformat:2 }}</span>
+                        <span class="kpi-trend positive">
+                            <i class="bi bi-arrow-up-short"></i> Last 30 days
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lab Tests Revenue -->
+        <div class="col-md-3">
+            <div class="card kpi-card tests-card">
+                <div class="card-body">
+                    <div class="kpi-icon-wrapper tests">
+                        <i class="bi bi-microscope"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Lab Tests Revenue</span>
+                        <span class="kpi-value">KES {{ total_tests|floatformat:2 }}</span>
+                        <span class="kpi-trend positive">
+                            <i class="bi bi-arrow-up-short"></i> Last 30 days
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consultation Fees -->
+        <div class="col-md-3">
+            <div class="card kpi-card consultation-card">
+                <div class="card-body">
+                    <div class="kpi-icon-wrapper consultation">
+                        <i class="bi bi-chat-square-text"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Consultation Fees</span>
+                        <span class="kpi-value">KES {{ total_consultation|floatformat:2 }}</span>
+                        <span class="kpi-trend positive">
+                            <i class="bi bi-arrow-up-short"></i> Last 30 days
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registration Fees -->
+        <div class="col-md-3">
+            <div class="card kpi-card registration-card">
+                <div class="card-body">
+                    <div class="kpi-icon-wrapper registration">
+                        <i class="bi bi-person-plus"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Registration Fees</span>
+                        <span class="kpi-value">KES {{ total_registration|floatformat:2 }}</span>
+                        <span class="kpi-trend positive">
+                            <i class="bi bi-arrow-up-short"></i> Last 30 days
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grand Total Card -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="grand-total-card">
+                <div class="grand-total-content">
+                    <div class="total-icon">
+                        <i class="bi bi-piggy-bank"></i>
+                    </div>
+                    <div class="total-text">
+                        <span class="total-label">Total Clinic Revenue</span>
+                        <span class="total-value">KES {{ grand_total|floatformat:2 }}</span>
+                    </div>
+                    <div class="total-period">
+                        <i class="bi bi-calendar-check me-1"></i>
+                        Last 30 Days
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-4 mb-5">
+        <!-- Pie Chart -->
+        <div class="col-lg-6">
+            <div class="card chart-card">
+                <div class="card-header chart-header">
+                    <div class="d-flex align-items-center">
+                        <div class="chart-icon me-3">
+                            <i class="bi bi-pie-chart"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Revenue Breakdown</h5>
+                            <p class="text-muted small mb-0">Distribution by category</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                    <div class="chart-legend-custom mt-3">
+                        <div class="legend-item">
+                            <span class="color-dot drugs"></span>
+                            <span>Drugs: <strong>KES {{ breakdown.Drugs|floatformat:2 }}</strong></span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-dot tests"></span>
+                            <span>Lab Tests: <strong>KES {{ breakdown.Tests|floatformat:2 }}</strong></span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-dot consultation"></span>
+                            <span>Consultation: <strong>KES {{ breakdown.Consultation|floatformat:2 }}</strong></span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-dot registration"></span>
+                            <span>Registration: <strong>KES {{ breakdown.Registration|floatformat:2 }}</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Line Chart -->
+        <div class="col-lg-6">
+            <div class="card chart-card">
+                <div class="card-header chart-header">
+                    <div class="d-flex align-items-center">
+                        <div class="chart-icon me-3">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Daily Revenue Trend</h5>
+                            <p class="text-muted small mb-0">Last 30 days performance</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Revenue Table -->
+    <div class="card table-card">
+        <div class="card-header table-header">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="table-icon me-3">
+                        <i class="bi bi-table"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">Daily Revenue Breakdown</h5>
+                        <p class="text-white-50 small mb-0">Detailed daily transactions</p>
+                    </div>
+                </div>
+                <div class="table-badge">
+                    <i class="bi bi-calendar-range me-2"></i>
+                    Last 30 Days
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table modern-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th class="text-end">Drugs</th>
+                            <th class="text-end">Tests</th>
+                            <th class="text-end">Consultation</th>
+                            <th class="text-end">Registration</th>
+                            <th class="text-end">Daily Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for day in daily_data %}
+                        <tr class="table-row">
+                            <td class="date-cell">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-calendar3 me-2 text-primary"></i>
+                                    {{ day.day|date:"d M Y" }}
+                                </div>
+                            </td>
+                            <td class="text-end amount-cell drugs-cell">
+                                KES {{ day.drugs|default:0|floatformat:2 }}
+                            </td>
+                            <td class="text-end amount-cell tests-cell">
+                                KES {{ day.tests|default:0|floatformat:2 }}
+                            </td>
+                            <td class="text-end amount-cell consultation-cell">
+                                KES {{ day.consultation|default:0|floatformat:2 }}
+                            </td>
+                            <td class="text-end amount-cell registration-cell">
+                                KES {{ day.registration|default:0|floatformat:2 }}
+                            </td>
+                            <td class="text-end total-cell fw-bold">
+                                KES {{ day.daily_total|default:0|floatformat:2 }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="empty-table-state">
+                                    <i class="bi bi-clipboard-data fs-1 text-muted mb-3"></i>
+                                    <h6 class="fw-bold mb-2">No Data Available</h6>
+                                    <p class="text-muted mb-0">No revenue recorded in the last 30 days</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-footer">
+                        <tr>
+                            <th class="text-end" colspan="5">Grand Total:</th>
+                            <th class="text-end">KES {{ grand_total|floatformat:2 }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Pie Chart - Revenue Breakdown
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Drugs', 'Lab Tests', 'Consultation', 'Registration'],
+            datasets: [{
+                data: [{{ breakdown.Drugs }}, {{ breakdown.Tests }}, {{ breakdown.Consultation }}, {{ breakdown.Registration }}],
+                backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#0d6efd'],
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            const total = {{ grand_total }};
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return context.label + ': KES ' + value.toLocaleString() + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Line Chart - Daily Trend
+    const lineCtx = document.getElementById('lineChart').getContext('2d');
+    new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for day in daily_data %}'{{ day.day|date:"d M" }}', {% endfor %}],
+            datasets: [{
+                label: 'Daily Revenue',
+                data: [{% for day in daily_data %}{{ day.daily_total|default:0 }}, {% endfor %}],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                borderWidth: 3,
+                pointBackgroundColor: '#28a745',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Revenue: KES ' + context.raw.toLocaleString();
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    ticks: { callback: value => 'KES ' + value }
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+    /* Page Header */
+    .page-header-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        box-shadow: 0 10px 20px -10px #28a745;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
+        font-weight: 800;
+    }
+
+    .date-badge {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        background: #f8f9fa;
+        border-radius: 50px;
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* KPI Cards */
+    .kpi-card {
+        border: none;
+        border-radius: 24px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: white;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px -15px rgba(0,0,0,0.15);
+    }
+
+    .kpi-card .card-body {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .kpi-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .kpi-icon-wrapper.drugs {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        box-shadow: 0 10px 20px -10px #28a745;
+    }
+
+    .kpi-icon-wrapper.tests {
+        background: linear-gradient(135deg, #17a2b8, #0dcaf0);
+        box-shadow: 0 10px 20px -10px #17a2b8;
+    }
+
+    .kpi-icon-wrapper.consultation {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+        box-shadow: 0 10px 20px -10px #ffc107;
+    }
+
+    .kpi-icon-wrapper.registration {
+        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+        box-shadow: 0 10px 20px -10px #0d6efd;
+    }
+
+    .kpi-content {
+        flex: 1;
+    }
+
+    .kpi-label {
+        display: block;
+        font-size: 0.85rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.3rem;
+    }
+
+    .kpi-value {
+        display: block;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #212529;
+        line-height: 1.2;
+        margin-bottom: 0.3rem;
+    }
+
+    .kpi-trend {
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.6rem;
+        border-radius: 30px;
+        background: #e8f5e9;
+        color: #28a745;
+    }
+
+    .kpi-trend i {
+        font-size: 1rem;
+    }
+
+    /* Grand Total Card */
+    .grand-total-card {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border-radius: 30px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px -15px #28a745;
+    }
+
+    .grand-total-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: white;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .total-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        backdrop-filter: blur(5px);
+    }
+
+    .total-text {
+        flex: 1;
+    }
+
+    .total-label {
+        display: block;
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-bottom: 0.3rem;
+    }
+
+    .total-value {
+        display: block;
+        font-size: 3rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
+
+    .total-period {
+        padding: 0.6rem 1.5rem;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        backdrop-filter: blur(5px);
+    }
+
+    /* Chart Cards */
+    .chart-card {
+        border: none;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+
+    .chart-header {
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        padding: 1.2rem 1.5rem;
+        border-bottom: 2px solid #28a745;
+    }
+
+    .chart-icon {
+        width: 45px;
+        height: 45px;
+        background: rgba(40, 167, 69, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #28a745;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+
+    .chart-legend-custom {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 16px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .color-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 4px;
+    }
+
+    .color-dot.drugs { background: #28a745; }
+    .color-dot.tests { background: #17a2b8; }
+    .color-dot.consultation { background: #ffc107; }
+    .color-dot.registration { background: #0d6efd; }
+
+    /* Table Card */
+    .table-card {
+        border: none;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+        margin-top: 2rem;
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        padding: 1.2rem 1.5rem;
+        border: none;
+    }
+
+    .table-icon {
+        width: 45px;
+        height: 45px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        backdrop-filter: blur(5px);
+    }
+
+    .table-badge {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        padding: 0.5rem 1.2rem;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        backdrop-filter: blur(5px);
+    }
+
+    /* Modern Table */
+    .modern-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .modern-table thead th {
+        background: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .modern-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: middle;
+    }
+
+    .table-row:hover {
+        background: #f8f9fa;
+    }
+
+    .date-cell {
+        font-weight: 500;
+        color: #212529;
+    }
+
+    .amount-cell {
+        font-family: 'Courier New', monospace;
+        font-weight: 500;
+    }
+
+    .drugs-cell { color: #28a745; }
+    .tests-cell { color: #17a2b8; }
+    .consultation-cell { color: #ffc107; }
+    .registration-cell { color: #0d6efd; }
+    .total-cell { color: #212529; }
+
+    .table-footer {
+        background: #f8f9fa;
+        font-weight: 700;
+    }
+
+    .table-footer th {
+        padding: 1rem;
+        border-top: 2px solid #dee2e6;
+    }
+
+    /* Empty State */
+    .empty-table-state {
+        padding: 3rem;
+        text-align: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .grand-total-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .total-value {
+            font-size: 2rem;
+        }
+
+        .kpi-card .card-body {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .chart-legend-custom {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .modern-table {
+            font-size: 0.85rem;
+        }
+    }
+</style>
+
+{% endblock %}

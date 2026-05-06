@@ -1,0 +1,823 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container-fluid py-4">
+    <!-- Page Header with Gradient -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div class="page-header">
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-person-check-fill me-2" style="color: var(--primary);"></i>
+                <span class="gradient-text">Revisit Patient</span>
+            </h2>
+            <p class="text-muted mt-1 mb-0">Search and select returning patient</p>
+        </div>
+        <a href="{% url 'register_patient' %}" class="btn btn-modern-primary-outline">
+            <i class="bi bi-person-plus-fill me-2"></i>
+            New Patient
+            <i class="bi bi-plus-circle ms-2"></i>
+        </a>
+    </div>
+
+    <!-- SEARCH CARD - Modern Design -->
+    <div class="card modern-card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-3">
+                <div class="icon-wrapper-sm me-2">
+                    <i class="bi bi-search text-primary"></i>
+                </div>
+                <h5 class="fw-bold mb-0">Search Filters</h5>
+            </div>
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3 form-group">
+                    <label class="form-label small fw-bold text-uppercase">Search By</label>
+                    <div class="input-group modern-input-group">
+                        <span class="input-group-text bg-light border-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="q" class="form-control modern-input" placeholder="OP Number / Name / Phone" value="{{ request.GET.q }}">
+                    </div>
+                </div>
+                <div class="col-md-3 form-group">
+                    <label class="form-label small fw-bold text-uppercase">From Date</label>
+                    <div class="input-group modern-input-group">
+                        <span class="input-group-text bg-light border-0">
+                            <i class="bi bi-calendar-start"></i>
+                        </span>
+                        <input type="date" name="from_date" class="form-control modern-input" value="{{ request.GET.from_date }}">
+                    </div>
+                </div>
+                <div class="col-md-3 form-group">
+                    <label class="form-label small fw-bold text-uppercase">To Date</label>
+                    <div class="input-group modern-input-group">
+                        <span class="input-group-text bg-light border-0">
+                            <i class="bi bi-calendar-end"></i>
+                        </span>
+                        <input type="date" name="to_date" class="form-control modern-input" value="{{ request.GET.to_date }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-modern-primary w-100">
+                        <i class="bi bi-search me-2"></i>
+                        Search Patients
+                    </button>
+                </div>
+            </form>
+
+            <!-- Active Filters Display -->
+            {% if request.GET.q or request.GET.from_date or request.GET.to_date %}
+            <div class="mt-3 d-flex align-items-center">
+                <small class="text-muted me-2">Active filters:</small>
+                <div class="d-flex gap-2 flex-wrap">
+                    {% if request.GET.q %}
+                    <span class="badge filter-badge">
+                        <i class="bi bi-person me-1"></i>{{ request.GET.q }}
+                        <a href="?{% if request.GET.from_date %}from_date={{ request.GET.from_date }}&{% endif %}{% if request.GET.to_date %}to_date={{ request.GET.to_date }}{% endif %}" class="ms-2 text-white"><i class="bi bi-x"></i></a>
+                    </span>
+                    {% endif %}
+                    {% if request.GET.from_date %}
+                    <span class="badge filter-badge">
+                        <i class="bi bi-calendar me-1"></i>From: {{ request.GET.from_date }}
+                        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.to_date %}to_date={{ request.GET.to_date }}{% endif %}" class="ms-2 text-white"><i class="bi bi-x"></i></a>
+                    </span>
+                    {% endif %}
+                    {% if request.GET.to_date %}
+                    <span class="badge filter-badge">
+                        <i class="bi bi-calendar me-1"></i>To: {{ request.GET.to_date }}
+                        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.from_date %}from_date={{ request.GET.from_date }}{% endif %}" class="ms-2 text-white"><i class="bi bi-x"></i></a>
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- PATIENT LIST CARD -->
+    <div class="card modern-card border-0">
+        <div class="card-header modern-card-header py-3 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="icon-wrapper-sm bg-primary me-2">
+                    <i class="bi bi-people-fill text-white"></i>
+                </div>
+                <h5 class="fw-bold mb-0">Patient Records</h5>
+            </div>
+            <span class="patient-count-badge">
+                <i class="bi bi-person me-1"></i>
+                {{ patients.count }} Patient{{ patients.count|pluralize }}
+            </span>
+        </div>
+
+        <div class="card-body p-0">
+            {% if patients %}
+                <div class="list-group list-group-flush modern-list-group">
+                    {% for p in patients %}
+                    <a href="?q={{ p.op_number }}{% if request.GET.from_date %}&from_date={{ request.GET.from_date }}{% endif %}{% if request.GET.to_date %}&to_date={{ request.GET.to_date }}{% endif %}"
+                       class="list-group-item list-group-item-action px-4 py-4 {% if p.op_number == selected_op %}active-patient{% endif %}">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center">
+                                    <div class="patient-avatar me-3 {% if p.op_number == selected_op %}bg-white text-danger{% else %}bg-danger text-white{% endif %}">
+                                        {{ p.full_name|make_list|first }}
+                                    </div>
+                                    <div>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <span class="patient-op-badge {% if p.op_number == selected_op %}bg-white text-danger{% else %}bg-danger text-white{% endif %} me-2">
+                                                {{ p.op_number }}
+                                            </span>
+                                            {% if p.op_number == selected_op %}
+                                            <span class="badge bg-white text-danger">
+                                                <i class="bi bi-check-circle-fill me-1"></i>Selected
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        <h5 class="mb-1 fw-bold">{{ p.full_name }}</h5>
+                                        <div class="patient-meta">
+                                            <span class="me-3"><i class="bi bi-phone me-1"></i>{{ p.phone }}</span>
+                                            <span><i class="bi bi-tag me-1"></i>{{ p.get_patient_type_display }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex justify-content-md-end align-items-center mt-3 mt-md-0">
+                                    <div class="text-md-end me-3">
+                                        <small class="text-muted d-block">
+                                            <i class="bi bi-calendar3 me-1"></i>Registered
+                                        </small>
+                                        <strong>{{ p.registered_on|date:"d M Y" }}</strong>
+                                    </div>
+                                    <div class="patient-arrow {% if p.op_number == selected_op %}text-white{% else %}text-primary{% endif %}">
+                                        <i class="bi {% if p.op_number == selected_op %}bi-check-circle-fill{% else %}bi-arrow-right-circle{% endif %} fs-3"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions on Hover -->
+                        <div class="quick-actions">
+                            <button class="btn btn-sm btn-light" onclick="event.preventDefault(); window.location.href='?q={{ p.op_number }}&action=file'">
+                                <i class="bi bi-folder"></i>
+                            </button>
+                            <button class="btn btn-sm btn-light" onclick="event.preventDefault(); window.location.href='?q={{ p.op_number }}&action=appointment'">
+                                <i class="bi bi-calendar-plus"></i>
+                            </button>
+                            <button class="btn btn-sm btn-light" onclick="event.preventDefault(); window.location.href='?q={{ p.op_number }}&action=history'">
+                                <i class="bi bi-clock-history"></i>
+                            </button>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 empty-state">
+                    <div class="empty-state-icon mb-3">
+                        <i class="bi bi-person-x"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">No patients found</h5>
+                    <p class="text-muted mb-3">Try adjusting your search filters or register a new patient</p>
+                    <a href="{% url 'register_patient' %}" class="btn btn-modern-primary-outline btn-sm">
+                        <i class="bi bi-person-plus me-2"></i>
+                        Register New Patient
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- SELECTED PATIENT CARD - Enhanced Design -->
+    {% if selected_patient %}
+    <div class="mt-4 selected-patient-section">
+        <div class="card modern-card border-0 selected-patient-card">
+            <div class="card-header selected-patient-header">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper-lg bg-white text-danger me-3">
+                        <i class="bi bi-person-check-fill"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-white">Patient Selected for Revisit</h4>
+                        <p class="text-white-50 mb-0">OP Number: {{ selected_patient.op_number }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <!-- Patient Profile Header -->
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <div class="profile-avatar bg-gradient-danger text-white me-4">
+                                {{ selected_patient.full_name|make_list|first }}
+                            </div>
+                            <div>
+                                <h2 class="fw-bold mb-1">{{ selected_patient.full_name }}</h2>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <span class="badge patient-type-badge">
+                                        <i class="bi bi-tag me-1"></i>{{ selected_patient.get_patient_type_display }}
+                                    </span>
+                                    <span class="text-muted">
+                                        <i class="bi bi-calendar3 me-1"></i>Member since: {{ selected_patient.registered_on|date:"F Y" }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="qr-code-placeholder">
+                            <i class="bi bi-qr-code"></i>
+                            <small>Scan OP Card</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Details Grid -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h6 class="info-card-title">
+                                <i class="bi bi-person-vcard me-2"></i>Personal Information
+                            </h6>
+                            <div class="info-card-content">
+                                <div class="info-row">
+                                    <span class="info-label">ID Number:</span>
+                                    <span class="info-value">{{ selected_patient.id_number }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Date of Birth:</span>
+                                    <span class="info-value">{{ selected_patient.date_of_birth|date:"d M Y" }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Gender:</span>
+                                    <span class="info-value">{{ selected_patient.get_gender_display }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Address:</span>
+                                    <span class="info-value">{{ selected_patient.address }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <h6 class="info-card-title">
+                                <i class="bi bi-telephone me-2"></i>Contact & Emergency
+                            </h6>
+                            <div class="info-card-content">
+                                <div class="info-row">
+                                    <span class="info-label">Phone:</span>
+                                    <span class="info-value">{{ selected_patient.phone }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Next of Kin:</span>
+                                    <span class="info-value">{{ selected_patient.next_of_kin_name }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Kin Phone:</span>
+                                    <span class="info-value">{{ selected_patient.next_of_kin_phone|default:"Not provided" }}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Payment Mode:</span>
+                                    <span class="info-value">{{ selected_patient.get_payment_mode_display }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-primary-soft">
+                                <i class="bi bi-clock-history text-primary"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label">Previous Visits</div>
+                                <div class="stat-value">{{ selected_patient.visit_count|default:"12" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-success-soft">
+                                <i class="bi bi-calendar-check text-success"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label">Last Visit</div>
+                                <div class="stat-value">{{ selected_patient.last_visit|default:"15 Jan 2026" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-warning-soft">
+                                <i class="bi bi-prescription text-warning"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label">Active Prescriptions</div>
+                                <div class="stat-value">{{ selected_patient.active_prescriptions|default:"3" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="#" class="btn btn-modern-primary btn-lg">
+                        <i class="bi bi-folder2-open me-2"></i>
+                        Open Patient File
+                    </a>
+                    <a href="#" class="btn btn-modern-success btn-lg">
+                        <i class="bi bi-calendar-plus me-2"></i>
+                        Book Appointment
+                    </a>
+                    <a href="#" class="btn btn-modern-info btn-lg">
+                        <i class="bi bi-clock-history me-2"></i>
+                        View History
+                    </a>
+                    <a href="#" class="btn btn-modern-warning btn-lg">
+                        <i class="bi bi-file-text me-2"></i>
+                        Start Consultation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Modern Page Header */
+    .page-header {
+        position: relative;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Modern Outline Button */
+    .btn-modern-primary-outline {
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        padding: 0.6rem 1.5rem;
+        border-radius: 14px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-modern-primary-outline:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -10px var(--primary);
+    }
+
+    /* Icon Wrapper */
+    .icon-wrapper-sm {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary-light);
+        border-radius: 10px;
+        color: var(--primary);
+    }
+
+    .icon-wrapper-lg {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.2);
+        border-radius: 18px;
+        font-size: 1.8rem;
+        backdrop-filter: blur(5px);
+    }
+
+    /* Filter Badge */
+    .filter-badge {
+        background: var(--primary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .filter-badge a {
+        color: white;
+        text-decoration: none;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+
+    .filter-badge a:hover {
+        opacity: 1;
+    }
+
+    /* Modern Card Header */
+    .modern-card-header {
+        background: linear-gradient(135deg, #f8fafd, #ffffff);
+        border-bottom: 2px solid rgba(46,91,255,0.1);
+        border-radius: 30px 30px 0 0 !important;
+    }
+
+    /* Patient Count Badge */
+    .patient-count-badge {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.4rem 1rem;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Modern List Group */
+    .modern-list-group {
+        border-radius: 0 0 30px 30px;
+        overflow: hidden;
+    }
+
+    .list-group-item {
+        border: none;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+
+    .list-group-item:hover {
+        background: linear-gradient(135deg, #f8fafd, #ffffff);
+        transform: translateX(5px);
+        box-shadow: -5px 0 15px rgba(46,91,255,0.1);
+    }
+
+    .list-group-item.active-patient {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-left: 5px solid white !important;
+    }
+
+    .list-group-item.active-patient * {
+        color: white !important;
+    }
+
+    .list-group-item.active-patient .text-muted {
+        color: rgba(255,255,255,0.8) !important;
+    }
+
+    /* Patient Avatar */
+    .patient-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Patient OP Badge */
+    .patient-op-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* Patient Meta */
+    .patient-meta {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    .patient-meta i {
+        font-size: 0.8rem;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        position: absolute;
+        top: 50%;
+        right: 1rem;
+        transform: translateY(-50%);
+        display: flex;
+        gap: 0.5rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+        background: white;
+        padding: 0.5rem;
+        border-radius: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .list-group-item:hover .quick-actions {
+        opacity: 1;
+        right: 1.5rem;
+    }
+
+    .quick-actions .btn {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        transition: all 0.2s;
+    }
+
+    .quick-actions .btn:hover {
+        background: var(--primary);
+        color: white;
+        transform: scale(1.1);
+    }
+
+    /* Empty State */
+    .empty-state {
+        animation: fadeIn 0.6s ease;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: var(--text-muted);
+        opacity: 0.3;
+    }
+
+    /* Selected Patient Card */
+    .selected-patient-section {
+        animation: slideInUp 0.6s ease;
+    }
+
+    .selected-patient-card {
+        overflow: hidden;
+    }
+
+    .selected-patient-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border: none;
+        padding: 1.5rem;
+    }
+
+    /* Profile Avatar */
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        box-shadow: 0 10px 25px rgba(46,91,255,0.3);
+    }
+
+    .bg-gradient-danger {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    }
+
+    /* Patient Type Badge */
+    .patient-type-badge {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        font-weight: 600;
+    }
+
+    /* QR Code Placeholder */
+    .qr-code-placeholder {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.8rem;
+        background: #f8fafd;
+        border-radius: 16px;
+        border: 2px dashed var(--primary);
+    }
+
+    .qr-code-placeholder i {
+        font-size: 2rem;
+        color: var(--primary);
+    }
+
+    .qr-code-placeholder small {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-top: 0.2rem;
+    }
+
+    /* Info Card */
+    .info-card {
+        background: #f8fafd;
+        border-radius: 20px;
+        padding: 1.2rem;
+        height: 100%;
+    }
+
+    .info-card-title {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding-bottom: 0.5rem;
+    }
+
+    .info-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .info-label {
+        width: 100px;
+        color: var(--text-muted);
+    }
+
+    .info-value {
+        flex: 1;
+        font-weight: 500;
+    }
+
+    /* Stat Card */
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        border: 1px solid rgba(0,0,0,0.03);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .bg-primary-soft {
+        background: rgba(46, 91, 255, 0.1);
+    }
+
+    .bg-success-soft {
+        background: rgba(16, 185, 129, 0.1);
+    }
+
+    .bg-warning-soft {
+        background: rgba(245, 158, 11, 0.1);
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        line-height: 1.2;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px dashed rgba(0,0,0,0.05);
+    }
+
+    .btn-modern-primary, .btn-modern-success, .btn-modern-info, .btn-modern-warning {
+        padding: 0.8rem 2rem;
+        border-radius: 16px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-modern-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        box-shadow: 0 10px 20px -10px var(--primary);
+    }
+
+    .btn-modern-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        box-shadow: 0 10px 20px -10px #10b981;
+    }
+
+    .btn-modern-info {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        box-shadow: 0 10px 20px -10px #3b82f6;
+    }
+
+    .btn-modern-warning {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        box-shadow: 0 10px 20px -10px #f59e0b;
+    }
+
+    .btn-modern-primary:hover, .btn-modern-success:hover, .btn-modern-info:hover, .btn-modern-warning:hover {
+        transform: translateY(-3px) scale(1.02);
+        color: white;
+    }
+
+    .btn-modern-primary:active, .btn-modern-success:active, .btn-modern-info:active, .btn-modern-warning:active {
+        transform: translateY(0);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive */
+    @media(max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+        }
+
+        .quick-actions {
+            position: static;
+            opacity: 1;
+            transform: none;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .list-group-item:hover .quick-actions {
+            right: auto;
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+        }
+
+        .info-row {
+            flex-direction: column;
+        }
+
+        .info-label {
+            width: auto;
+            margin-bottom: 0.2rem;
+        }
+    }
+</style>
+
+{% endblock %}

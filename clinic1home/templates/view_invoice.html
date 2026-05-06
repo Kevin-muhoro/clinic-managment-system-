@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container py-5">
+    <!-- Search Form (always first) -->
+    <div class="card shadow-lg border-0 mb-5">
+        <div class="card-body p-5 text-center">
+            <h3 class="fw-bold mb-4">Generate Patient Invoice</h3>
+            <p class="text-muted mb-4">Enter the patient's OP number to view and download their financial invoice</p>
+
+            {% if error_message %}
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                {{ error_message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endif %}
+
+            <form method="get" class="row g-3 justify-content-center">
+                <div class="col-md-7 col-lg-6">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-primary text-white">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="op_number" class="form-control" 
+                               placeholder="Enter OP Number (e.g. OP00001)" 
+                               value="{{ search_op }}" required autofocus>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-search me-2"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if patient %}
+    <!-- Patient Header -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-person-circle me-2 text-primary"></i>
+                {{ patient.full_name }}
+            </h2>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="badge bg-primary fs-5 px-3 py-2">{{ patient.op_number }}</span>
+                <span class="text-muted fs-5">{{ patient.phone }}</span>
+            </div>
+        </div>
+        <a href="{% url 'patient_card' patient.op_number %}" class="btn btn-outline-primary btn-lg px-4">
+            <i class="bi bi-arrow-left me-2"></i> Patient Card
+        </a>
+    </div>
+
+    <!-- Invoice / Bill Display -->
+    {% if bill %}
+    <div class="card shadow-lg border-0 mb-5">
+        <div class="card-header bg-gradient-primary text-white text-center py-4">
+            <h4 class="mb-1">Invoice Summary – {{ bill.bill_number }}</h4>
+            <p class="mb-0 small">Date: {{ bill.date|date:"d F Y" }}</p>
+        </div>
+
+        <div class="card-body p-5">
+            <div class="row text-center g-4 mb-5">
+                <div class="col-md-3">
+                    <h6 class="text-muted mb-2">Total Amount</h6>
+                    <h3 class="fw-bold text-dark">KES {{ bill.total_amount|floatformat:2 }}</h3>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="text-success mb-2">Paid Amount</h6>
+                    <h3 class="fw-bold text-success">KES {{ bill.paid_amount|floatformat:2 }}</h3>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="text-danger mb-2">Balance Due</h6>
+                    <h3 class="fw-bold text-danger">KES {{ bill.balance|floatformat:2 }}</h3>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="text-info mb-2">Status</h6>
+                    <span class="badge fs-5 px-4 py-2 {% if bill.status == 'PAID' %}bg-success{% elif bill.status == 'PARTIAL' %}bg-warning{% else %}bg-danger{% endif %}">
+                        {{ bill.status }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Download Button -->
+            <div class="text-center">
+                <a href="{% url 'generate_invoice' bill.bill_number %}" class="btn btn-primary btn-lg px-5 py-3" target="_blank">
+                    <i class="bi bi-download me-2"></i> Download Invoice (PDF)
+                </a>
+            </div>
+
+            <div class="text-center mt-4 text-muted small">
+                This invoice includes all prescriptions, lab tests, and payment history for this bill.
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-info-circle-fill me-2 fs-4"></i>
+        No bills found for this patient yet.
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Initial state before search -->
+    <div class="text-center py-5 my-5">
+        <div class="display-1 text-muted mb-4">
+            <i class="bi bi-receipt-cutoff"></i>
+        </div>
+        <h4 class="text-muted mb-3">Ready to Generate an Invoice?</h4>
+        <p class="text-muted lead">
+            Enter the patient's OP number above to view their financial summary and download a printable invoice.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

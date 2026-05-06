@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic Management System - Login</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* ─── LAYOUT ──────────────────────────────────────── */
+        body {
+            min-height: 100vh;
+            display: flex;
+            font-family: 'DM Sans', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Left decorative panel */
+        .login-panel-left {
+            flex: 1;
+            background: linear-gradient(160deg, #0e245e 0%, #1a3eb3 45%, #2e5bff 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            overflow: hidden;
+        }
+
+        /* Dot grid texture */
+        .login-panel-left::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+            background-size: 26px 26px;
+            pointer-events: none;
+        }
+
+        /* Large faint circle */
+        .login-panel-left::after {
+            content: '';
+            position: absolute;
+            bottom: -160px;
+            left: -120px;
+            width: 520px;
+            height: 520px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            pointer-events: none;
+        }
+
+        .left-top-circle {
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            pointer-events: none;
+        }
+
+        .left-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            color: #fff;
+            max-width: 380px;
+        }
+
+        .left-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+        }
+
+        .left-logo-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .left-logo-text {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .left-logo-text span {
+            font-weight: 400;
+            opacity: 0.7;
+        }
+
+        .left-illustration {
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2.5rem;
+            border: 1.5px solid rgba(255,255,255,0.15);
+            box-shadow: 0 0 60px rgba(46,91,255,0.4);
+            font-size: 5rem;
+        }
+
+        .left-headline {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.65rem;
+            font-weight: 800;
+            line-height: 1.25;
+            letter-spacing: -0.5px;
+            margin-bottom: 1rem;
+        }
+
+        .left-sub {
+            font-size: 0.92rem;
+            opacity: 0.7;
+            line-height: 1.65;
+            margin-bottom: 2.5rem;
+        }
+
+        .left-badges {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .left-badge {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50px;
+            padding: 0.38em 1em;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Right login form panel */
+        .login-panel-right {
+            width: 480px;
+            flex-shrink: 0;
+            background: #f8fafd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 2.5rem;
+            overflow-y: auto;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        /* ─── FORM HEADER ─────────────────────────────── */
+        .form-heading {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: #0f1829;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.35rem;
+        }
+
+        .form-subheading {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 2.25rem;
+        }
+
+        /* ─── FORM FIELDS ─────────────────────────────── */
+        .field-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .field-label {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #334155;
+            letter-spacing: 0.4px;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .field-wrap {
+            position: relative;
+        }
+
+        .field-wrap .field-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1rem;
+            pointer-events: none;
+            transition: color 0.18s;
+        }
+
+        .field-input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 2.75rem;
+            background: #fff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.925rem;
+            color: #0f1829;
+            transition: border-color 0.18s, box-shadow 0.18s;
+            outline: none;
+        }
+
+        .field-input::placeholder { color: #b4bfcc; }
+
+        .field-input:hover {
+            border-color: #94a3b8;
+        }
+
+        .field-input:focus {
+            border-color: #2e5bff;
+            box-shadow: 0 0 0 4px rgba(46,91,255,0.1);
+            background: #fff;
+        }
+
+        .field-input:focus + .field-icon,
+        .field-wrap:focus-within .field-icon {
+            color: #2e5bff;
+        }
+
+        /* password toggle */
+        .pw-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 1rem;
+            background: none;
+            border: none;
+            padding: 0;
+            transition: color 0.18s;
+        }
+        .pw-toggle:hover { color: #2e5bff; }
+
+        /* ─── SUBMIT BUTTON ───────────────────────────── */
+        .btn-login {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            background: linear-gradient(135deg, #1a3eb3 0%, #2e5bff 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            box-shadow: 0 8px 24px -6px rgba(46,91,255,0.45);
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.55s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px -8px rgba(46,91,255,0.5);
+        }
+
+        .btn-login:hover::before { transform: translateX(100%); }
+        .btn-login:active { transform: translateY(0); }
+
+        .btn-login.loading {
+            opacity: 0.78;
+            pointer-events: none;
+        }
+
+        /* ─── ALERTS ──────────────────────────────────── */
+        .login-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 0.9rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .login-alert-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .login-alert-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .login-alert-success .login-alert-icon {
+            background: #10b981;
+            color: #fff;
+        }
+
+        .login-alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .login-alert-danger .login-alert-icon {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .login-alert-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            margin-bottom: 1px;
+        }
+
+        .login-alert-msg {
+            opacity: 0.88;
+            line-height: 1.45;
+        }
+
+        /* ─── DIVIDER ─────────────────────────────────── */
+        .form-divider {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            margin: 1.6rem 0 1.3rem;
+            color: #cbd5e1;
+            font-size: 0.78rem;
+        }
+
+        .form-divider::before,
+        .form-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        /* ─── FOOTER ──────────────────────────────────── */
+        .login-footer {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .login-footer-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .login-footer-item i { font-size: 0.85rem; }
+
+        .copyright {
+            text-align: center;
+            margin-top: 1.25rem;
+            font-size: 0.72rem;
+            color: #b0bac6;
+        }
+
+        /* ─── MOBILE ──────────────────────────────────── */
+        @media (max-width: 768px) {
+            body { flex-direction: column; overflow: auto; }
+            .login-panel-left { display: none; }
+            .login-panel-right {
+                width: 100%;
+                min-height: 100vh;
+                padding: 2rem 1.5rem;
+            }
+        }
+
+        /* ─── ANIMATIONS ──────────────────────────────── */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        .spinning { animation: spin 0.9s linear infinite; display: inline-block; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-box { animation: fadeUp 0.45s ease both; }
+    </style>
+</head>
+<body>
+
+<!-- ═══ LEFT PANEL ═══════════════════════════════════════ -->
+<div class="login-panel-left">
+    <div class="left-top-circle"></div>
+
+    <div class="left-content">
+        <!-- Brand -->
+        <div class="left-logo">
+            <div class="left-logo-icon"><i class="bi bi-hospital-fill"></i></div>
+            <div class="left-logo-text">Clinic <span>System</span></div>
+        </div>
+
+        <!-- Illustration -->
+        <div class="left-illustration">🏥</div>
+
+        <!-- Headline -->
+        <h2 class="left-headline">Smarter Clinical<br>Management</h2>
+        <p class="left-sub">A secure, role-aware platform built for<br>modern healthcare teams.</p>
+
+        <!-- Trust badges -->
+        <div class="left-badges">
+            <span class="left-badge"><i class="bi bi-shield-check"></i> HIPAA Compliant</span>
+            <span class="left-badge"><i class="bi bi-lock-fill"></i> SSL Encrypted</span>
+            <span class="left-badge"><i class="bi bi-clock-fill"></i> 24/7 Access</span>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ RIGHT PANEL (LOGIN FORM) ═════════════════════════ -->
+<div class="login-panel-right">
+    <div class="login-box">
+
+        <!-- Form Header -->
+        <h2 class="form-heading">Welcome back</h2>
+        <p class="form-subheading">Sign in to your staff account to continue.</p>
+
+        <!-- Alerts: Django messages -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="login-alert {% if message.tags == 'success' %}login-alert-success{% else %}login-alert-danger{% endif %}">
+                <div class="login-alert-icon">
+                    <i class="bi {% if message.tags == 'success' %}bi-check-lg{% else %}bi-exclamation-lg{% endif %}"></i>
+                </div>
+                <div>
+                    <div class="login-alert-title">{% if message.tags == 'success' %}Success{% else %}Notice{% endif %}</div>
+                    <div class="login-alert-msg">{{ message }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Alerts: Form errors -->
+        {% if form.errors %}
+        <div class="login-alert login-alert-danger">
+            <div class="login-alert-icon"><i class="bi bi-x-lg"></i></div>
+            <div>
+                <div class="login-alert-title">Login Failed</div>
+                <div class="login-alert-msg">Invalid username or password. Please try again.</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Login Form -->
+        <form method="post" action="{% url 'login' %}" id="loginForm" novalidate>
+            {% csrf_token %}
+
+            <!-- Username -->
+            <div class="field-group">
+                <label class="field-label" for="id_username">USERNAME</label>
+                <div class="field-wrap">
+                    <input type="text"
+                           id="id_username"
+                           name="username"
+                           class="field-input"
+                           placeholder="Enter your username"
+                           required
+                           autofocus
+                           autocomplete="username">
+                    <i class="bi bi-person field-icon"></i>
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="field-group">
+                <label class="field-label" for="id_password">PASSWORD</label>
+                <div class="field-wrap">
+                    <input type="password"
+                           id="id_password"
+                           name="password"
+                           class="field-input"
+                           placeholder="Enter your password"
+                           required
+                           autocomplete="current-password">
+                    <i class="bi bi-lock field-icon"></i>
+                    <button type="button" class="pw-toggle" id="pwToggle" aria-label="Toggle password visibility">
+                        <i class="bi bi-eye" id="pwToggleIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <input type="hidden" name="next" value="{{ next|default:'/dashboard/' }}">
+
+            <button type="submit" class="btn-login" id="loginBtn">
+                <i class="bi bi-box-arrow-in-right"></i>
+                Sign In
+            </button>
+        </form>
+
+        <!-- Footer trust row -->
+        <div class="login-footer">
+            <div class="login-footer-item"><i class="bi bi-shield-check"></i> SSL Secure</div>
+            <div class="login-footer-item"><i class="bi bi-incognito"></i> Private</div>
+            <div class="login-footer-item"><i class="bi bi-headset"></i> Support</div>
+        </div>
+
+        <div class="copyright">&copy; 2026 Clinic Management System. All rights reserved.</div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Loading state on submit
+    document.getElementById('loginForm').addEventListener('submit', function () {
+        const btn = document.getElementById('loginBtn');
+        btn.innerHTML = '<span class="spinning"><i class="bi bi-arrow-repeat"></i></span>&nbsp; Signing in...';
+        btn.classList.add('loading');
+    });
+
+    // Password show/hide toggle
+    const pwInput    = document.getElementById('id_password');
+    const pwToggle   = document.getElementById('pwToggle');
+    const pwIcon     = document.getElementById('pwToggleIcon');
+
+    pwToggle.addEventListener('click', function () {
+        const isHidden = pwInput.type === 'password';
+        pwInput.type   = isHidden ? 'text' : 'password';
+        pwIcon.className = isHidden ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+</script>
+</body>
+</html>
